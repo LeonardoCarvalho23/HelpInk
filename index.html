@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HelpInk</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:#fafafa;--cd:#fff;--tx:#18181b;--mu:#71717a;--bd:#e4e4e7;--in:#f4f4f5;--g:#f5b0cd;--gl:#fdf0f6;--gt:#be185d;--on:#4a0d2b;--am:#fef3c7;--amt:#92400e;--rd:#fee2e2;--rdt:#b91c1c;--bl:#e5e7eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--bl:#2c2c32}}
+:root[data-theme="dark"]{--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--bl:#2c2c32}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+#app{display:flex;min-height:100vh}
+nav{width:240px;background:#18181b;color:#a1a1aa;padding:24px 14px;position:fixed;top:0;bottom:0;left:0;display:flex;flex-direction:column;gap:6px;z-index:20}
+.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:20px;padding:0 8px 22px}
+.logo b{background:#f5b0cd;color:#4a0d2b;width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;font-size:16px}
+nav button:hover{background:#27272a}nav button.on{background:var(--g);color:var(--on)}
+nav button i{font-style:normal;width:22px;text-align:center}
+main{margin-left:240px;flex:1;padding:28px 32px;max-width:1200px;min-width:0}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{margin:0;font-size:26px}h2{margin:0;font-size:18px}.sub{color:var(--mu);font-size:14px;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:18px}
+.st .top{display:flex;justify-content:space-between;font-size:12px;color:var(--mu)}.st .top em{font-style:normal;color:var(--gt)}
+.st .n{font-size:24px;font-weight:700;margin:12px 0 2px}.st .l{color:var(--mu);font-size:14px}
+.ic{width:38px;height:38px;border-radius:10px;background:var(--gl);display:grid;place-items:center}
+.row{display:flex;align-items:center;gap:14px;background:var(--in);border-radius:10px;padding:12px 14px;margin-top:10px;flex-wrap:wrap}
+.row .t{min-width:56px;text-align:center;font-weight:600;color:var(--gt)}.row .t small{display:block;color:var(--mu);font-weight:400}
+.row .m{flex:1;min-width:140px}.row .m small{color:var(--mu);display:block;font-size:13px}
+.row .v{text-align:right;font-size:13px;color:var(--mu)}.row .v b{display:block;color:var(--tx);font-size:15px}
+.bd{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--gl);color:var(--gt);white-space:nowrap}
+.bd.p{background:var(--am);color:var(--amt)}.bd.x{background:var(--rd);color:var(--rdt)}.bd.c{background:var(--bl);color:var(--mu)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.btn{all:unset;cursor:pointer;background:var(--g);color:var(--on);padding:10px 16px;border-radius:10px;font-size:15px;font-weight:500;text-align:center}
+.btn.s{background:var(--in);color:var(--tx);padding:7px 12px;font-size:13px}.btn.d{background:var(--rd);color:var(--rdt)}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;width:100%}
+.bar input{width:auto;flex:1;min-width:160px}.bar input[type=month]{flex:0}
+label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}label.ck{display:flex;gap:10px;align-items:center;color:var(--tx);font-size:14px}label.ck input{width:20px;height:20px}
+.modal{position:fixed;inset:0;background:#0009;display:grid;place-items:center;z-index:50;padding:12px}
+.modal>div{background:var(--cd);border-radius:16px;padding:22px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.note{font-size:13px;background:var(--in);padding:10px;border-radius:10px;color:var(--mu);margin-top:12px}
+.acts{display:flex;gap:6px}.empty{text-align:center;color:var(--mu);padding:28px}
+textarea.big{min-height:200px;font-family:monospace;font-size:12px}
+.pos{color:var(--gt)}.neg{color:var(--rdt)}
+@media(max-width:1023px){nav{width:72px;align-items:center}nav button span,.logo span{display:none}nav button{padding:12px}main{margin-left:72px;padding:22px}.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){nav{top:auto;width:100%;height:calc(62px + env(safe-area-inset-bottom,0px));flex-direction:row;justify-content:space-around;padding:6px 4px env(safe-area-inset-bottom,0px);gap:0}.logo{display:none}
+nav button{flex-direction:column;gap:2px;padding:6px 8px;font-size:10px}nav button span{display:block}main{margin-left:0;padding:16px 14px 90px}h1{font-size:21px}.f2{grid-template-columns:1fr}.grid{gap:10px}.row .v{text-align:left}}
+</style></head><body>
+<div id="app"><nav id="nav"></nav><main id="main"></main></div><div id="mod"></div>
+<script>
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const R=n=>'R$ '+(+n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today=()=>new Date().toISOString().slice(0,10);
+const fd=d=>d?d.split('-').reverse().join('/'):'';
+let badD=0;
+function toISO(s){s=s.trim();if(!s)return'';const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s);if(m){const d=new Date(m[3],m[2]-1,m[1]);if(d.getFullYear()==m[3]&&d.getMonth()==m[2]-1&&d.getDate()==m[1])return m[3]+'-'+m[2]+'-'+m[1]}badD=1;return''}
+function mask(e){let v=e.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);else if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);e.value=v}
+function maskT(e){let v=e.value.replace(/\D/g,'').slice(0,4);if(v.length>2)v=v.slice(0,2)+':'+v.slice(2);e.value=v}
+function toT(s){s=s.trim();if(!s)return'';const m=/^(\d{1,2}):?(\d{2})$/.exec(s);if(m&&+m[1]<24&&+m[2]<60)return m[1].padStart(2,'0')+':'+m[2];badD=1;return''}
+let est='';const ESTILOS=['Realismo','Blackwork','Fineline','Old School (Tradicional)','Neotradicional','Aquarela','Geométrico','Pontilhismo (Dotwork)','Oriental / Irezumi','Tribal','Maori','Lettering','Minimalista','Biomecânico','Surrealismo','Trash Polka','Cobertura (Cover-up)','Retoque','Outro'];
+function filt(){return`<div style="display:flex;gap:8px;flex-wrap:wrap">${monthIn()}<select style="width:auto" onchange="est=this.value;render()"><option value="">Todos os estilos</option>${ESTILOS.map(e=>`<option ${e===est?'selected':''}>${e}</option>`).join('')}</select></div>`}
+const MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let db={studio:'Meu Estúdio',clients:[],sessions:[],personal:[],stock:[],buys:[]},tab='dash',per=today().slice(0,7),q='';
+/* ---- Armazenamento: cookies (em blocos) + espelho em localStorage ---- */
+const CK='bink',CH=3000;
+function save(){const s=JSON.stringify(db);
+ try{localStorage.setItem(CK,s)}catch(e){}
+ try{const e=encodeURIComponent(s),n=Math.ceil(e.length/CH);
+  for(let i=0;i<n;i++)document.cookie=`${CK}${i}=${e.slice(i*CH,(i+1)*CH)};max-age=31536000;path=/;SameSite=Lax`;
+  document.cookie=`${CK}n=${n};max-age=31536000;path=/;SameSite=Lax`;
+  for(let i=n;i<n+30;i++)document.cookie=`${CK}${i}=;max-age=0;path=/`;}catch(e){}}
+function load(){let s=null;
+ try{const c=Object.fromEntries(document.cookie.split('; ').map(x=>x.split(/=(.*)/s).slice(0,2)));const n=+c[CK+'n'];
+  if(n){let p='';for(let i=0;i<n;i++)p+=c[CK+i]||'';s=decodeURIComponent(p)}}catch(e){}
+ if(!s)try{s=localStorage.getItem(CK)}catch(e){}
+ try{if(s)db=Object.assign(db,JSON.parse(s))}catch(e){}}
+load();
+/* ---- Modal / formulário genérico ---- */
+function form(title,fields,v,ok,del){v=v||{};
+ const h=fields.map(f=>{if(f.t==='note')return`<div class="note">${f.l}</div>`;
+  const val=v[f.k]!=null?v[f.k]:(f.d!=null?f.d:'');let i;
+  if(f.t==='ck')return`<label class="ck"><input type="checkbox" id="f_${f.k}" ${v[f.k]?'checked':''}>${f.l}</label>`;
+  if(f.t==='sel')i=`<select id="f_${f.k}">${f.o.map(o=>{const a=Array.isArray(o)?o:[o,o];return`<option value="${esc(a[0])}" ${a[0]==val?'selected':''}>${esc(a[1])}</option>`}).join('')}</select>`;
+  else if(f.t==='ta')i=`<textarea id="f_${f.k}" rows="3">${esc(val)}</textarea>`;
+  else if(f.t==='time')i=`<input id="f_${f.k}" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(val)}">`;
+  else if(f.t==='date')i=`<input id="f_${f.k}" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="mask(this)" value="${fd(val)}">`;
+  else i=`<input id="f_${f.k}" type="${f.t||'text'}" ${f.t==='number'?'step="0.01" inputmode="decimal"':''} value="${esc(val)}">`;
+  return`<div style="${f.w?'':'grid-column:1/-1'}"><label>${f.l}</label>${i}</div>`}).join('');
+ $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)bk()"><div><h2>${title}</h2><div class="f2">${h}</div>
+ <div class="bar" style="margin:18px 0 0"><button class="btn" id="sv">Salvar</button><button class="btn s" onclick="closeM()">Cancelar</button>${del?'<button class="btn s d" id="dl">Excluir</button>':''}</div></div></div>`;
+ $('#sv').onclick=()=>{badD=0;const o={};for(const f of fields){if(f.t==='note')continue;const e=$('#f_'+f.k);o[f.k]=f.t==='ck'?e.checked:f.t==='number'?(parseFloat(e.value)||0):f.t==='date'?toISO(e.value):f.t==='time'?toT(e.value):e.value.trim()}
+  if(badD){alert('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');return}
+  if(fields.some(f=>f.r&&!o[f.k])){alert('Preencha os campos obrigatórios.');return}ok(o);save();closeM();render()};
+ const snap=()=>fields.map(f=>f.t==='note'?'':(f.t==='ck'?$('#f_'+f.k).checked:$('#f_'+f.k).value)).join('|'),s0=snap();
+ window.bk=()=>snap()===s0?closeM():$('#sv').click();
+ if(del)$('#dl').onclick=()=>{if(confirm('Excluir este registro?')){del();save();closeM();render()}}}
+const closeM=()=>$('#mod').innerHTML='';
+/* ---- Dados auxiliares ---- */
+const cname=id=>(db.clients.find(c=>c.id===id)||{}).nome||'—';
+const inP=d=>(d||'').slice(0,7)===per;
+const live=s=>s.status!=='Cancelado';
+const sumS=(l,k)=>l.reduce((a,s)=>a+(+s[k]||0),0);
+const stCls=s=>s==='Confirmado'||s==='Concluído'?'':s==='Cancelado'?'x':'p';
+const TERMO='Termo: declaro que fui informado(a) sobre os procedimentos, cuidados e riscos da tatuagem (infecção, alergia, cicatrização), que as informações de saúde são verdadeiras e que autorizo a realização do trabalho.';
+/* ---- Formulários ---- */
+const clientF=[{k:'nome',l:'Nome completo',r:1},{k:'tel',l:'Telefone / WhatsApp',t:'tel',w:1},{k:'nasc',l:'Nascimento',t:'date',w:1},{k:'email',l:'E-mail',t:'email'},{k:'doc',l:'CPF / RG',w:1},{k:'saude',l:'Anamnese: alergias, medicamentos, doenças',t:'ta'},{k:'obs',l:'Observações',t:'ta'},{t:'note',l:TERMO},{k:'aceite',l:'Cliente leu e aceitou o termo'},{k:'aceiteNome',l:'Nome de quem aceitou',w:1},{k:'aceiteData',l:'Data do aceite',t:'date',w:1}];
+clientF[8].t='ck';
+const sessF=()=>[{k:'cid',l:'Cliente',t:'sel',o:[['','Selecione…'],...db.clients.map(c=>[c.id,c.nome])],r:1},{k:'desc',l:'Tatuagem / serviço',r:1},{k:'estilo',l:'Estilo da tatuagem',t:'sel',o:[['','Selecione…'],'Realismo','Blackwork','Fineline','Old School (Tradicional)','Neotradicional','Aquarela','Geométrico','Pontilhismo (Dotwork)','Oriental / Irezumi','Tribal','Maori','Lettering','Minimalista','Biomecânico','Surrealismo','Trash Polka','Cobertura (Cover-up)','Retoque','Outro']},{k:'cm',l:'Tamanho (cm)',t:'number',w:1},{k:'cart',l:'Cartuchos utilizados',t:'number',w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'hora',l:'Início',t:'time',w:1},{k:'fim',l:'Término',t:'time',w:1},{k:'status',l:'Status',t:'sel',o:['Pendente','Confirmado','Concluído','Cancelado'],w:1},{k:'valor',l:'Valor cobrado (R$)',t:'number',w:1},{k:'material',l:'Custo dos materiais (R$)',t:'number',w:1},{k:'pago',l:'Pagamento recebido'},{k:'obs',l:'Observações',t:'ta'}];
+const persF=[{k:'desc',l:'Descrição',r:1},{k:'cat',l:'Categoria',t:'sel',o:['Moradia','Alimentação','Transporte','Estúdio / aluguel','Impostos','Lazer','Outros'],w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'valor',l:'Valor (R$)',t:'number',w:1,r:1}];
+const stockF=[{k:'nome',l:'Material',r:1},{k:'qtd',l:'Quantidade',t:'number',w:1},{k:'compra',l:'Dia da compra',t:'date',d:today(),w:1,r:1},{k:'fim',l:'Dia que acabou',t:'date',w:1}];
+const addC=()=>form('Novo cliente',clientF,{},o=>db.clients.push({id:uid(),...o}));
+const edC=id=>{const c=db.clients.find(x=>x.id===id);form('Cliente',clientF,c,o=>Object.assign(c,o),()=>db.clients=db.clients.filter(x=>x.id!==id))};
+const addS=()=>db.clients.length?form('Nova sessão',sessF(),{},o=>db.sessions.push({id:uid(),...o})):(alert('Cadastre um cliente primeiro.'),go('cli'));
+const edS=id=>{const s=db.sessions.find(x=>x.id===id);form('Sessão',sessF(),s,o=>Object.assign(s,o),()=>db.sessions=db.sessions.filter(x=>x.id!==id))};
+const addP=()=>form('Novo custo pessoal',persF,{},o=>db.personal.push({id:uid(),...o}));
+const edP=id=>{const s=db.personal.find(x=>x.id===id);form('Custo pessoal',persF,s,o=>Object.assign(s,o),()=>db.personal=db.personal.filter(x=>x.id!==id))};
+const addK=()=>form('Novo material',stockF,{},o=>db.stock.push({id:uid(),...o}));
+const edK=id=>{const s=db.stock.find(x=>x.id===id);form('Material',stockF,s,o=>Object.assign(s,o),()=>db.stock=db.stock.filter(x=>x.id!==id))};
+const buy=id=>{const s=db.stock.find(x=>x.id===id);form('Compra: '+esc(s.nome),[{k:'qtd',l:'Quantidade comprada',t:'number',w:1,r:1},{k:'custo',l:'Custo unitário (R$)',t:'number',d:s.custo,w:1},{k:'data',l:'Data',t:'date',d:today()}],{},o=>{s.qtd=(+s.qtd||0)+o.qtd;s.custo=o.custo||s.custo;db.buys.push({id:uid(),sid:id,...o})})};
+const use=id=>{const s=db.stock.find(x=>x.id===id);form('Baixa: '+esc(s.nome),[{k:'qtd',l:'Quantidade usada',t:'number',r:1}],{},o=>s.qtd=Math.max(0,(+s.qtd||0)-o.qtd))};
+/* ---- Telas ---- */
+const NAV=[['dash','📊','Dashboard'],['cli','👥','Clientes'],['ses','🎨','Tatuagens'],['pes','💳','Pessoal'],['est','📦','Estoque'],['bkp','💾','Backup']];
+function go(t){tab=t;q='';render();window.scrollTo(0,0)}
+const monthIn=()=>{const[y,m]=per.split('-'),Y=new Date().getFullYear();let ys='';for(let i=Y-5;i<=Y+1;i++)ys+=`<option ${i==y?'selected':''}>${i}</option>`;
+ return`<div class="bar" style="margin:0;gap:6px"><select style="width:auto" onchange="per=$('#pY').value+'-'+this.value;render()">${MES.map((n,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${v===m?'selected':''}>${n}</option>`}).join('')}</select><select id="pY" style="width:auto" onchange="per=this.value+'-${m}';render()">${ys}</select></div>`};
+const statBox=(i,top,n,l,cls)=>`<div class="card st"><div class="top"><div class="ic">${i}</div><em>${top}</em></div><div class="n ${cls||''}">${n}</div><div class="l">${l}</div></div>`;
+function sessRow(s,full){return`<div class="row" onclick="edS('${s.id}')" style="cursor:pointer"><div class="t">${s.hora||'—'}<small>${full?fd(s.data):(s.fim||'')}</small></div><div class="m">${esc(s.desc)}<small>${esc(cname(s.cid))}${s.estilo?' · '+esc(s.estilo):''}${s.cm?' · '+s.cm+' cm':''}${s.cart?' · '+s.cart+(s.cart==1?' cartucho':' cartuchos'):''}</small></div>${full?`<div class="v"><b>${R(s.valor)}</b>material ${R(s.material)} · lucro ${R((s.valor||0)-(s.material||0))}${s.pago?' · pago':''}${dur(s)?' · ⏱ '+dur(s):''}</div>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span></div>`}
+const dur=s=>{if(!s.hora||!s.fim)return'';const a=s.hora.split(':'),b=s.fim.split(':');let m=(b[0]*60+ +b[1])-(a[0]*60+ +a[1]);if(m<0)m+=1440;return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
+const sortS=l=>l.slice().sort((a,b)=>(a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
+function vDash(){const h=new Date().getHours(),g=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+ const ps=db.sessions.filter(s=>inP(s.data)&&live(s)&&(!est||s.estilo===est)),conf=ps.filter(s=>s.status==='Confirmado'||s.status==='Concluído').length;
+ const all=db.sessions.filter(live),saldo=sumS(all,'valor')-sumS(all,'material')-sumS(db.personal,'valor');
+ 
+ const ag=sortS(db.sessions.filter(s=>live(s)&&inP(s.data)&&s.data>=today()&&(!est||s.estilo===est))).slice(0,6);
+ return`<header><div><h1>${g}, ${esc(db.studio)}! 👋</h1><div class="sub">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div></div>${filt()}</header>
+ <div class="grid">${statBox('📅',conf+' confirmadas',ps.length,'Sessões no período')}${statBox('💲','No período',R(sumS(ps,'valor')),'Faturamento')}${statBox('👥','Total',db.clients.length,'Clientes')}${statBox('📈',saldo>=0?'Positivo':'Negativo',R(saldo),'Saldo total',saldo>=0?'':'neg')}</div>
+ 
+ <div class="card"><div class="bar" style="justify-content:space-between;margin:0"><h2>Agenda do período</h2><a href="#" style="color:var(--gt);text-decoration:none" onclick="go('ses');return false">Ver tudo ›</a></div>
+ ${ag.map(s=>sessRow(s)).join('')||'<div class="empty">Nenhuma sessão futura neste período.</div>'}</div>`}
+function vCli(){const l=db.clients.filter(c=>(c.nome+c.tel).toLowerCase().includes(q.toLowerCase()));
+ return`<header><div><h1>Clientes</h1><div class="sub">Dados, anamnese e aceite do termo</div></div></header>
+ <div class="bar"><input placeholder="Buscar cliente…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addC()">+ Novo cliente</button></div>
+ ${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s));return`<div class="row" style="cursor:pointer" onclick="edC('${c.id}')"><div class="m">${esc(c.nome)}<small>${esc(c.tel||'sem telefone')} · ${ss.length} sessões · ${R(sumS(ss,'valor'))}</small></div><span class="bd ${c.aceite?'':'p'}">${c.aceite?'Termo aceito'+(c.aceiteData?' em '+fd(c.aceiteData):''):'Termo pendente'}</span></div>`}).join('')||'<div class="empty">Nenhum cliente encontrado.</div>'}`}
+function vSes(){const l=sortS(db.sessions.filter(s=>inP(s.data)&&(!est||s.estilo===est))).reverse(),a=l.filter(live),f=sumS(a,'valor'),m=sumS(a,'material');
+ return`<header><div><h1>Tatuagens e financeiro</h1><div class="sub">Quanto cobrou, quanto gastou de material e o lucro</div></div>${filt()}</header>
+ <div class="grid">${statBox('💲','','R$ '+f.toLocaleString('pt-BR'),'Faturado')}${statBox('🧪','','R$ '+m.toLocaleString('pt-BR'),'Materiais')}${statBox('📈','','R$ '+(f-m).toLocaleString('pt-BR'),'Lucro das tatuagens',f-m<0?'neg':'')}${statBox('⏳','',R(sumS(a.filter(s=>!s.pago),'valor')),'A receber')}</div>
+ <div class="bar"><button class="btn" onclick="addS()">+ Nova sessão</button></div>${l.map(s=>sessRow(s,1)).join('')||'<div class="empty">Sem sessões neste mês.</div>'}`}
+function vPes(){const l=db.personal.filter(p=>inP(p.data)).sort((a,b)=>b.data.localeCompare(a.data)),t=sumS(l,'valor');
+ return`<header><div><h1>Custos pessoais</h1><div class="sub">Contas e gastos fora das tatuagens</div></div>${monthIn()}</header>
+ <div class="grid">${statBox('💳','no mês',R(t),'Total de custos pessoais')}</div><div class="bar"><button class="btn" onclick="addP()">+ Novo custo</button></div>
+ ${l.map(p=>`<div class="row" style="cursor:pointer" onclick="edP('${p.id}')"><div class="t">${fd(p.data).slice(0,5)}</div><div class="m">${esc(p.desc)}<small>${esc(p.cat)}</small></div><div class="v"><b>${R(p.valor)}</b></div></div>`).join('')||'<div class="empty">Sem custos neste mês.</div>'}`}
+function vEst(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLowerCase())),tv=db.stock.reduce((a,s)=>a+s.qtd*s.custo,0),bp=db.buys.filter(b=>inP(b.data)).reduce((a,b)=>a+b.qtd*b.custo,0);
+ return`<header><div><h1>Estoque</h1><div class="sub">Materiais, custos e compras</div></div>${monthIn()}</header>
+ <div class="grid">${statBox('📦','',db.stock.length,'Itens cadastrados')}${statBox('💰','',R(tv),'Valor em estoque')}${statBox('🛒','no período',R(bp),'Compras')}</div>
+ <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
+ ${l.map(s=>{const lo=s.min>0&&s.qtd<=s.min;return`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${esc(s.cat)} · ${R(s.custo)} / ${esc(s.un)}</small></div><span class="bd ${lo?'x':''}">${s.qtd} ${esc(s.un)}</span><div class="acts"><button class="btn s" onclick="buy('${s.id}')">+ Compra</button><button class="btn s" onclick="use('${s.id}')">− Baixa</button></div></div>`}).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
+function toMD(){const T=(h,rows)=>rows.length?`| ${h.join(' | ')} |\n|${h.map(()=>'---').join('|')}|\n${rows.map(r=>'| '+r.map(x=>String(x==null?'':x).replace(/\|/g,'/')).join(' | ')+' |').join('\n')}\n`:'_Sem registros._\n';
+ return`# HelpInk — Backup de ${db.studio}\nGerado em ${new Date().toLocaleString('pt-BR')}\n\n## Clientes\n${T(['Nome','Telefone','E-mail','Termo aceito'],db.clients.map(c=>[c.nome,c.tel,c.email,c.aceite?'Sim '+fd(c.aceiteData):'Não']))}\n## Tatuagens\n${T(['Data','Cliente','Serviço','Estilo','Tamanho (cm)','Cartuchos','Duração','Valor','Material','Status','Pago'],db.sessions.map(s=>[fd(s.data),cname(s.cid),s.desc,s.estilo,s.cm,s.cart,dur(s),s.valor,s.material,s.status,s.pago?'Sim':'Não']))}\n## Custos pessoais\n${T(['Data','Descrição','Categoria','Valor'],db.personal.map(p=>[fd(p.data),p.desc,p.cat,p.valor]))}\n## Estoque\n${T(['Material','Qtd','Comprado em','Acabou em'],db.stock.map(s=>[s.nome,s.qtd,fd(s.compra),s.fim?fd(s.fim):'Em uso']))}\n## Dados para importação (não edite)\n\`\`\`json\n${JSON.stringify(db)}\n\`\`\`\n`}
+function vBkp(){return`<header><div><h1>Backup e dados</h1><div class="sub">Seus dados ficam salvos em cookies neste navegador</div></div></header>
+ <div class="card"><label>Nome do estúdio</label><input value="${esc(db.studio)}" onchange="db.studio=this.value||'Meu Estúdio';save()">
+ <h2 style="margin-top:22px">Exportar para .md</h2><div class="bar" style="margin-top:10px"><button class="btn" onclick="dl()">⬇ Baixar arquivo .md</button><button class="btn s" onclick="cp()">Copiar texto</button></div>
+ <div class="sub">Se o download for bloqueado pelo navegador, copie o texto abaixo e salve num arquivo .md.</div><textarea class="big" id="out" readonly onfocus="this.select()" style="margin-top:10px">${esc(toMD())}</textarea>
+ <h2 style="margin-top:22px">Importar de outro computador</h2><div class="bar" style="margin-top:10px"><input type="file" accept=".md,.txt" onchange="rd(this.files[0])"></div>
+ <textarea class="big" id="inp" placeholder="…ou cole aqui o conteúdo do arquivo .md"></textarea><div class="bar" style="margin-top:10px"><button class="btn" onclick="imp($('#inp').value)">Importar (substitui os dados atuais)</button></div></div>`}
+function dl(){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([toMD()],{type:'text/markdown'}));a.download='helpink-backup-'+today()+'.md';document.body.appendChild(a);a.click();a.remove()}catch(e){alert('Download bloqueado. Use "Copiar texto".')}}
+function cp(){const t=$('#out');t.select();try{navigator.clipboard.writeText(t.value).then(()=>alert('Copiado!'),()=>document.execCommand('copy'))}catch(e){document.execCommand('copy')}}
+function rd(f){if(!f)return;const r=new FileReader();r.onload=()=>imp(r.result);r.readAsText(f)}
+function imp(t){const m=/```json\s*([\s\S]*?)```/.exec(t||'');if(!m){alert('Arquivo inválido: bloco de dados não encontrado.');return}
+ try{const d=JSON.parse(m[1]);if(!confirm('Substituir todos os dados atuais pelos do arquivo?'))return;db=Object.assign({studio:'Meu Estúdio',clients:[],sessions:[],personal:[],stock:[],buys:[]},d);save();alert('Dados importados!');go('dash')}catch(e){alert('Não foi possível ler os dados.')}}
+const acabou=id=>{db.stock.find(x=>x.id===id).fim=today();save();render()};
+const dias=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/864e5));
+function vEst2(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.compra||'').localeCompare(a.compra||'')),em=db.stock.filter(s=>!s.fim).length;
+ return`<header><div><h1>Estoque</h1><div class="sub">Quando você comprou e quando acabou cada material</div></div></header>
+ <div class="grid">${statBox('📦','',db.stock.length,'Materiais cadastrados')}${statBox('⏳','',em,'Em uso')}${statBox('✅','',db.stock.length-em,'Já acabaram')}</div>
+ <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
+ ${l.map(s=>`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${s.qtd?'Qtd '+s.qtd+' · ':''}Comprado em ${fd(s.compra)||'—'}${s.fim?' · acabou em '+fd(s.fim):''}</small></div><span class="bd ${s.fim?'c':''}">${s.fim?(s.compra?'Durou '+dias(s.compra,s.fim)+' dias':'Acabou'):'Em uso'}</span>${s.fim?'':`<button class="btn s" onclick="acabou('${s.id}')">Acabou hoje</button>`}</div>`).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
+const V={dash:vDash,cli:vCli,ses:vSes,pes:vPes,est:vEst2,bkp:vBkp};
+function render(){$('#nav').innerHTML=`<div class="logo"><b>H</b><span>HelpInk</span></div>`+NAV.map(n=>`<button class="${tab===n[0]?'on':''}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join('');$('#main').innerHTML=V[tab]()}
+render();
+</script></body></html>
