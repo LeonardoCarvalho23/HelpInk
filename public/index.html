@@ -40,7 +40,9 @@ label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}label.ck{di
 .modal{position:fixed;inset:0;background:#0009;display:grid;place-items:center;z-index:50;padding:12px}
 .modal>div{background:var(--cd);border-radius:16px;padding:22px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.note{font-size:13px;background:var(--in);padding:10px;border-radius:10px;color:var(--mu);margin-top:12px}
-.acts{display:flex;gap:6px}.empty{text-align:center;color:var(--mu);padding:28px}
+.acts{display:flex;gap:6px}
+.tat{border:1px solid var(--bd);border-radius:12px;padding:12px 14px 14px;margin-top:10px;background:var(--in)}.tat input,.tat select{background:var(--cd)}
+.f3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px}.tath{display:flex;justify-content:space-between;align-items:center;gap:8px}.tl{display:block;color:var(--mu);font-size:13px}.empty{text-align:center;color:var(--mu);padding:28px}
 textarea.big{min-height:200px;font-family:monospace;font-size:12px}
 .pos{color:var(--gt)}.neg{color:var(--rdt)}
 .auth{min-height:100vh;display:grid;place-items:center;padding:16px}.auth .card{width:100%;max-width:400px;padding:26px}
@@ -103,6 +105,11 @@ async function loadDB(){const r=await api('/api/data'),rows=r.rows;
    apenas valores simples (texto, número, sim/não). O resto é descartado. ---- */
 const RID=/^[A-Za-z0-9_-]{1,64}$/,RDT=/^\d{4}-\d{2}-\d{2}$/,RTM=/^\d{2}:\d{2}$/;
 const SAN={clients:{d:['nasc','aceiteData']},sessions:{d:['data'],t:['hora','fim'],n:['cm','cart','valor','material'],r:['cid']},personal:{d:['data'],n:['valor']},stock:{d:['compra','fim'],n:['qtd','custo','min']},buys:{d:['data'],n:['qtd','custo'],r:['sid']}};
+// Tatuagens de uma sessão. Sessões antigas (uma tatuagem só, nos campos da sessão) viram uma lista de 1 item.
+const num=v=>{const n=+v;return v===''||v==null||typeof v==='boolean'||!isFinite(n)?0:n};
+function tatList(r){const a=Array.isArray(r.tatuagens)&&r.tatuagens.length?r.tatuagens:[{desc:r.desc,estilo:r.estilo,cm:r.cm,cart:r.cart,valor:r.valor}];
+ const l=a.slice(0,30).filter(t=>t&&typeof t==='object'&&!Array.isArray(t)).map(t=>({desc:typeof t.desc==='string'?t.desc.slice(0,300):'',estilo:typeof t.estilo==='string'?t.estilo.slice(0,60):'',cm:num(t.cm),cart:num(t.cart),valor:num(t.valor)}));
+ return l.length?l:[{desc:'',estilo:'',cm:0,cart:0,valor:0}]}
 function sanitize(d){const o=blank();let drop=0;if(!d||typeof d!=='object')return o;
  if(typeof d.studio==='string'&&d.studio.trim())o.studio=d.studio.slice(0,80);o.named=!!d.named;
  for(const c of COLS){const S=SAN[c];for(const r of Array.isArray(d[c])?d[c]:[]){
@@ -112,6 +119,7 @@ function sanitize(d){const o=blank();let drop=0;if(!d||typeof d!=='object')retur
   for(const k of S.t||[])if(x[k]&&!RTM.test(x[k]))x[k]='';
   for(const k of S.n||[])if(x[k]!==''&&x[k]!=null){const n=+x[k];x[k]=isFinite(n)?n:0}
   for(const k of S.r||[])if(x[k]&&!RID.test(x[k]))x[k]='';
+  if(c==='sessions')x.tatuagens=tatList(r);
   o[c].push(x)}}
  o.dropped=drop;return o}
 /* ---- Dados antigos (versão que salvava em cookies/localStorage neste navegador) ---- */
@@ -152,13 +160,60 @@ const stCls=s=>s==='Confirmado'||s==='Concluído'?'':s==='Cancelado'?'x':'p';
 const TERMO='Termo: declaro que fui informado(a) sobre os procedimentos, cuidados e riscos da tatuagem (infecção, alergia, cicatrização), que as informações de saúde são verdadeiras e que autorizo a realização do trabalho.';
 /* ---- Formulários ---- */
 const clientF=[{k:'nome',l:'Nome completo',r:1},{k:'tel',l:'Telefone / WhatsApp',t:'tel',w:1},{k:'nasc',l:'Nascimento',t:'date',w:1},{k:'email',l:'E-mail',t:'email'},{k:'doc',l:'CPF / RG',w:1},{k:'saude',l:'Anotações internas de saúde',t:'ta'},{k:'obs',l:'Observações',t:'ta'},{t:'note',l:'📝 A ficha de anamnese e o termo de consentimento são preenchidos e assinados pelo próprio cliente, pelo link enviado no botão "Ficha" da lista de clientes.'}];
-const sessF=()=>[{k:'cid',l:'Cliente',t:'sel',o:[['','Selecione…'],...db.clients.map(c=>[c.id,c.nome])],r:1},{k:'desc',l:'Tatuagem / serviço',r:1},{k:'estilo',l:'Estilo da tatuagem',t:'sel',o:[['','Selecione…'],'Realismo','Blackwork','Fineline','Old School (Tradicional)','Neotradicional','Aquarela','Geométrico','Pontilhismo (Dotwork)','Oriental / Irezumi','Tribal','Maori','Lettering','Minimalista','Biomecânico','Surrealismo','Trash Polka','Cobertura (Cover-up)','Retoque','Outro']},{k:'cm',l:'Tamanho (cm)',t:'number',w:1},{k:'cart',l:'Cartuchos utilizados',t:'number',w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'hora',l:'Início',t:'time',w:1},{k:'fim',l:'Término',t:'time',w:1},{k:'status',l:'Status',t:'sel',o:['Pendente','Confirmado','Concluído','Cancelado'],w:1},{k:'valor',l:'Valor cobrado (R$)',t:'number',w:1},{k:'material',l:'Custo dos materiais (R$)',t:'number',w:1},{k:'pago',l:'Pagamento recebido'},{k:'obs',l:'Observações',t:'ta'}];
+/* ---- Sessão com várias tatuagens ---- */
+const tats=s=>Array.isArray(s.tatuagens)&&s.tatuagens.length?s.tatuagens:[{desc:s.desc,estilo:s.estilo,cm:s.cm,cart:s.cart,valor:s.valor}];
+const tF=s=>est?tats(s).filter(t=>t.estilo===est):tats(s);          // tatuagens que entram no filtro de estilo
+const temEst=s=>!est||tats(s).some(t=>t.estilo===est);
+const nT=l=>l.reduce((a,s)=>a+tF(s).length,0);                       // nº de tatuagens (respeita o filtro)
+const vT=l=>l.reduce((a,s)=>a+tF(s).reduce((b,t)=>b+(+t.valor||0),0),0); // valor das tatuagens (respeita o filtro)
+const nTat=l=>l.reduce((a,s)=>a+tats(s).length,0);                   // nº de tatuagens (sem filtro)
+const tatTxt=t=>[t.estilo,t.cm?t.cm+' cm':'',t.cart?t.cart+(t.cart==1?' cartucho':' cartuchos'):''].filter(Boolean).join(', ');
+function sessForm(title,s,ok,del){s=s||{};let items=tats(s).map(t=>({...t}));
+ const v=(k,d)=>s[k]!=null&&s[k]!==''?s[k]:d;
+ const sel=(id,opts,val)=>`<select id="${id}">${opts.map(o=>{const a=Array.isArray(o)?o:[o,o];return`<option value="${esc(a[0])}" ${a[0]==val?'selected':''}>${esc(a[1])}</option>`}).join('')}</select>`;
+ const numIn=(id,val,step)=>`<input id="${id}" type="number" step="${step}" inputmode="decimal" value="${val?esc(val):''}">`;
+ $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)bk()"><div><h2>${title}</h2>
+ <div class="f2"><div style="grid-column:1/-1"><label>Cliente *</label>${sel('s_cid',[['','Selecione…'],...db.clients.map(c=>[c.id,c.nome])],v('cid',''))}</div>
+ <div><label>Data *</label><input id="s_data" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="mask(this)" value="${fd(v('data',today()))}"></div>
+ <div><label>Status</label>${sel('s_status',['Pendente','Confirmado','Concluído','Cancelado'],v('status','Pendente'))}</div>
+ <div><label>Início</label><input id="s_hora" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(v('hora',''))}"></div>
+ <div><label>Término</label><input id="s_fim" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(v('fim',''))}"></div></div>
+ <h2 style="margin-top:20px">Tatuagens</h2><div id="tlist"></div>
+ <div class="bar" style="margin:12px 0 0"><button class="btn s" id="tadd">+ Adicionar tatuagem</button><div class="sub" id="ttot" style="margin:0 0 0 auto"></div></div>
+ <div class="f2"><div><label>Custo dos materiais da sessão (R$)</label>${numIn('s_material',v('material',''),'0.01')}</div>
+ <div style="display:flex;align-items:flex-end"><label class="ck" style="margin:0 0 10px"><input type="checkbox" id="s_pago" ${s.pago?'checked':''}>Pagamento recebido</label></div>
+ <div style="grid-column:1/-1"><label>Observações</label><textarea id="s_obs" rows="3">${esc(v('obs',''))}</textarea></div></div>
+ <div class="bar" style="margin:18px 0 0"><button class="btn" id="sv">Salvar</button><button class="btn s" onclick="closeM()">Cancelar</button>${del?'<button class="btn s d" id="dl">Excluir</button>':''}</div></div></div>`;
+ const read=()=>{items=items.map((t,i)=>({desc:$('#t_desc_'+i).value.trim(),estilo:$('#t_estilo_'+i).value,cm:parseFloat($('#t_cm_'+i).value)||0,cart:parseFloat($('#t_cart_'+i).value)||0,valor:parseFloat($('#t_valor_'+i).value)||0}));return items};
+ const tot=()=>{const t=read(),n=t.length,val=t.reduce((a,x)=>a+x.valor,0);$('#ttot').innerHTML=`${n} ${n==1?'tatuagem':'tatuagens'} · total <b>${R(val)}</b>`};
+ const draw=focus=>{$('#tlist').innerHTML=items.map((t,i)=>`<div class="tat"><div class="tath"><b>Tatuagem ${i+1}</b>${items.length>1?`<button class="btn s d" onclick="tatDel(${i})">Remover</button>`:''}</div>
+  <div class="f2"><div style="grid-column:1/-1"><label>Descrição *</label><input id="t_desc_${i}" maxlength="300" placeholder="Ex.: Rosa no antebraço" value="${esc(t.desc)}"></div>
+  <div style="grid-column:1/-1"><label>Estilo</label>${sel('t_estilo_'+i,[['','Selecione…'],...ESTILOS],t.estilo)}</div>
+  <div class="f3" style="grid-column:1/-1"><div><label>Tamanho (cm)</label>${numIn('t_cm_'+i,t.cm,'0.1')}</div><div><label>Cartuchos</label>${numIn('t_cart_'+i,t.cart,'1')}</div>
+  <div><label>Valor (R$)</label>${numIn('t_valor_'+i,t.valor,'0.01')}</div></div></div></div>`).join('');
+  for(let i=0;i<items.length;i++)$('#t_valor_'+i).oninput=tot;tot();
+  if(focus!=null){const e=$('#t_desc_'+focus);e.scrollIntoView({block:'center',behavior:'smooth'});e.focus()}};
+ window.tatDel=i=>{read();const t=items[i];if((t.desc||t.valor)&&!confirm('Remover a tatuagem '+(i+1)+(t.desc?' ('+t.desc+')':'')+'?'))return;items.splice(i,1);draw()};
+ $('#tadd').onclick=()=>{read();items.push({desc:'',estilo:'',cm:0,cart:0,valor:0});draw(items.length-1)};
+ draw();
+ const all=()=>JSON.stringify([read(),...['s_cid','s_data','s_status','s_hora','s_fim','s_material','s_obs'].map(k=>$('#'+k).value),$('#s_pago').checked]),s0=all();
+ window.bk=()=>all()===s0?closeM():$('#sv').click();
+ $('#sv').onclick=()=>{badD=0;const t=read().filter(x=>x.desc||x.estilo||x.cm||x.cart||x.valor);
+  const o={cid:$('#s_cid').value,data:toISO($('#s_data').value),hora:toT($('#s_hora').value),fim:toT($('#s_fim').value),status:$('#s_status').value,material:parseFloat($('#s_material').value)||0,pago:$('#s_pago').checked,obs:$('#s_obs').value.trim()};
+  if(badD){alert('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');return}
+  if(!o.cid||!o.data){alert('Escolha o cliente e a data.');return}
+  if(!t.length){alert('Adicione pelo menos uma tatuagem.');return}
+  const sem=t.findIndex(x=>!x.desc);if(sem>=0){alert('Descreva a tatuagem '+(items.indexOf(t[sem])+1)+'.');return}
+  // campos resumidos na sessão (compatibilidade com backup e telas antigas)
+  Object.assign(o,{tatuagens:t,valor:t.reduce((a,x)=>a+x.valor,0),desc:t.map(x=>x.desc).join(' + '),estilo:t[0].estilo,cm:t.reduce((a,x)=>a+x.cm,0),cart:t.reduce((a,x)=>a+x.cart,0)});
+  ok(o);save();closeM();render()};
+ if(del)$('#dl').onclick=()=>{if(confirm('Excluir esta sessão e todas as tatuagens dela?')){del();save();closeM();render()}}}
 const persF=[{k:'desc',l:'Descrição',r:1},{k:'cat',l:'Categoria',t:'sel',o:['Moradia','Alimentação','Transporte','Estúdio / aluguel','Impostos','Lazer','Outros'],w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'valor',l:'Valor (R$)',t:'number',w:1,r:1}];
 const stockF=[{k:'nome',l:'Material',r:1},{k:'qtd',l:'Quantidade',t:'number',w:1},{k:'compra',l:'Dia da compra',t:'date',d:today(),w:1,r:1},{k:'fim',l:'Dia que acabou',t:'date',w:1}];
 const addC=()=>form('Novo cliente',clientF,{},o=>{const id=uid();db.clients.push({id,...o});setTimeout(()=>{if(confirm('Cliente cadastrado! Enviar agora a ficha de anamnese para ele preencher e assinar?'))novaFicha(id)},150)});
 const edC=id=>{const c=db.clients.find(x=>x.id===id);form('Cliente',clientF,c,o=>Object.assign(c,o),()=>db.clients=db.clients.filter(x=>x.id!==id))};
-const addS=()=>db.clients.length?form('Nova sessão',sessF(),{},o=>db.sessions.push({id:uid(),...o})):(alert('Cadastre um cliente primeiro.'),go('cli'));
-const edS=id=>{const s=db.sessions.find(x=>x.id===id);form('Sessão',sessF(),s,o=>Object.assign(s,o),()=>db.sessions=db.sessions.filter(x=>x.id!==id))};
+const addS=cid=>db.clients.length?sessForm('Nova sessão',cid?{cid}:{},o=>db.sessions.push({id:uid(),...o})):(alert('Cadastre um cliente primeiro.'),go('cli'));
+const edS=id=>{const s=db.sessions.find(x=>x.id===id);sessForm('Sessão',s,o=>Object.assign(s,o),()=>db.sessions=db.sessions.filter(x=>x.id!==id))};
 const addP=()=>form('Novo custo pessoal',persF,{},o=>db.personal.push({id:uid(),...o}));
 const edP=id=>{const s=db.personal.find(x=>x.id===id);form('Custo pessoal',persF,s,o=>Object.assign(s,o),()=>db.personal=db.personal.filter(x=>x.id!==id))};
 const addK=()=>form('Novo material',stockF,{},o=>db.stock.push({id:uid(),...o}));
@@ -189,23 +244,24 @@ async function usrAct(i,action){const u=usrs[i];if(!u)return;
 const monthIn=()=>{const[y,m]=per.split('-'),Y=new Date().getFullYear();let ys='';for(let i=Y-5;i<=Y+1;i++)ys+=`<option ${i==y?'selected':''}>${i}</option>`;
  return`<div class="bar" style="margin:0;gap:6px"><select style="width:auto" onchange="per=$('#pY').value+'-'+this.value;render()">${MES.map((n,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${v===m?'selected':''}>${n}</option>`}).join('')}</select><select id="pY" style="width:auto" onchange="per=this.value+'-${m}';render()">${ys}</select></div>`};
 const statBox=(i,top,n,l,cls)=>`<div class="card st"><div class="top"><div class="ic">${i}</div><em>${top}</em></div><div class="n ${cls||''}">${n}</div><div class="l">${l}</div></div>`;
-function sessRow(s,full){return`<div class="row" onclick="edS('${s.id}')" style="cursor:pointer"><div class="t">${esc(s.hora)||'—'}<small>${full?fd(s.data):esc(s.fim)}</small></div><div class="m">${esc(s.desc)}<small>${esc(cname(s.cid))}${s.estilo?' · '+esc(s.estilo):''}${s.cm?' · '+esc(s.cm)+' cm':''}${s.cart?' · '+esc(s.cart)+(s.cart==1?' cartucho':' cartuchos'):''}</small></div>${full?`<div class="v"><b>${R(s.valor)}</b>material ${R(s.material)} · lucro ${R((s.valor||0)-(s.material||0))}${s.pago?' · pago':''}${dur(s)?' · ⏱ '+dur(s):''}</div>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span></div>`}
+function sessRow(s,full){const ts=tats(s),one=ts.length===1,val=ts.reduce((a,t)=>a+(+t.valor||0),0);
+ return`<div class="row" onclick="edS('${s.id}')" style="cursor:pointer"><div class="t">${esc(s.hora)||'—'}<small>${full?fd(s.data):esc(s.fim)}</small></div><div class="m">${ts.map(t=>esc(t.desc)).join(' <span style="color:var(--mu)">+</span> ')}<small>${esc(cname(s.cid))}${one?(tatTxt(ts[0])?' · '+esc(tatTxt(ts[0])):''):' · '+ts.length+' tatuagens'}</small>${full&&!one?ts.map(t=>`<span class="tl">• ${esc(t.desc)}${tatTxt(t)?' — '+esc(tatTxt(t)):''} · ${R(t.valor)}</span>`).join(''):''}</div>${full?`<div class="v"><b>${R(val)}</b>material ${R(s.material)} · lucro ${R(val-(s.material||0))}${s.pago?' · pago':''}${dur(s)?' · ⏱ '+dur(s):''}</div>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span></div>`}
 const dur=s=>{if(!s.hora||!s.fim)return'';const a=s.hora.split(':'),b=s.fim.split(':');let m=(b[0]*60+ +b[1])-(a[0]*60+ +a[1]);if(m<0)m+=1440;return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
 const sortS=l=>l.slice().sort((a,b)=>(a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
 function vDash(){const h=new Date().getHours(),g=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
- const ps=db.sessions.filter(s=>inP(s.data)&&live(s)&&(!est||s.estilo===est)),conf=ps.filter(s=>s.status==='Confirmado'||s.status==='Concluído').length;
+ const ps=db.sessions.filter(s=>inP(s.data)&&live(s)&&temEst(s)),conf=ps.filter(s=>s.status==='Confirmado'||s.status==='Concluído').length;
  const all=db.sessions.filter(live),saldo=sumS(all,'valor')-sumS(all,'material')-sumS(db.personal,'valor');
  
- const ag=sortS(db.sessions.filter(s=>live(s)&&inP(s.data)&&s.data>=today()&&(!est||s.estilo===est))).slice(0,6);
+ const ag=sortS(db.sessions.filter(s=>live(s)&&inP(s.data)&&s.data>=today()&&temEst(s))).slice(0,6);
  return`<header><div><h1>${g}, ${esc(db.studio)}! 👋</h1><div class="sub">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div></div>${filt()}</header>
- <div class="grid">${statBox('📅',conf+' confirmadas',ps.length,'Sessões no período')}${statBox('💲','No período',R(sumS(ps,'valor')),'Faturamento')}${statBox('👥','Total',db.clients.length,'Clientes')}${statBox('📈',saldo>=0?'Positivo':'Negativo',R(saldo),'Saldo total',saldo>=0?'':'neg')}</div>
+ <div class="grid">${statBox('🎨',ps.length+(ps.length==1?' sessão':' sessões')+' · '+conf+' conf.',nT(ps),'Tatuagens no período')}${statBox('💲','No período',R(vT(ps)),'Faturamento')}${statBox('👥','Total',db.clients.length,'Clientes')}${statBox('📈',saldo>=0?'Positivo':'Negativo',R(saldo),'Saldo total',saldo>=0?'':'neg')}</div>
  
  <div class="card"><div class="bar" style="justify-content:space-between;margin:0"><h2>Agenda do período</h2><a href="#" style="color:var(--gt);text-decoration:none" onclick="go('ses');return false">Ver tudo ›</a></div>
  ${ag.map(s=>sessRow(s)).join('')||'<div class="empty">Nenhuma sessão futura neste período.</div>'}</div>`}
 function vCli(){const l=db.clients.filter(c=>(c.nome+c.tel).toLowerCase().includes(q.toLowerCase()));
  return`<header><div><h1>Clientes</h1><div class="sub">Dados, ficha de anamnese e termo assinados pelo cliente</div></div></header>
  <div class="bar"><input placeholder="Buscar cliente…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addC()">+ Novo cliente</button></div>
- ${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s)),fs=fichaSt(c);return`<div class="row" style="cursor:pointer" onclick="edC('${c.id}')"><div class="m">${esc(c.nome)}<small>${esc(c.tel||'sem telefone')} · ${ss.length} sessões · ${R(sumS(ss,'valor'))}</small></div><span class="bd ${fs[1]}">${fs[0]}</span><button class="btn s" onclick="event.stopPropagation();fichaM('${c.id}')">📝 Ficha</button></div>`}).join('')||'<div class="empty">Nenhum cliente encontrado.</div>'}`}
+ ${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s)),fs=fichaSt(c),nt=nTat(ss);return`<div class="row" style="cursor:pointer" onclick="edC('${c.id}')"><div class="m">${esc(c.nome)}<small>${esc(c.tel||'sem telefone')} · ${nt} ${nt==1?'tatuagem':'tatuagens'} em ${ss.length} ${ss.length==1?'sessão':'sessões'} · ${R(sumS(ss,'valor'))}</small></div><span class="bd ${fs[1]}">${fs[0]}</span><button class="btn s" onclick="event.stopPropagation();fichaM('${c.id}')">📝 Ficha</button></div>`}).join('')||'<div class="empty">Nenhum cliente encontrado.</div>'}`}
 /* ---- Ficha de anamnese (o cliente preenche e assina pelo link) ---- */
 let fichas=null;
 async function loadFichas(){try{fichas=(await api('/api/forms')).forms}catch(e){console.error(e);if(!fichas)fichas=[]}if(tab==='cli'&&$('#app').style.display!=='none')render()}
@@ -253,9 +309,9 @@ async function usarDados(id,cid){try{const r=await api('/api/forms/doc?id='+enco
  const cpf=String(a.cpf||'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
  if(!confirm(`Atualizar o cadastro com os dados da ficha?\n\nNome: ${a.nome}\nCPF: ${cpf}\nNascimento: ${String(a.nasc).split('-').reverse().join('/')}${a.tel?'\nTelefone: '+a.tel:''}${a.email?'\nE-mail: '+a.email:''}`))return;
  Object.assign(c,{nome:a.nome,doc:cpf,nasc:a.nasc},a.tel?{tel:a.tel}:{},a.email?{email:a.email}:{});save();render();fichaM(cid)}catch(e){alert(e.message)}}
-function vSes(){const l=sortS(db.sessions.filter(s=>inP(s.data)&&(!est||s.estilo===est))).reverse(),a=l.filter(live),f=sumS(a,'valor'),m=sumS(a,'material');
+function vSes(){const l=sortS(db.sessions.filter(s=>inP(s.data)&&temEst(s))).reverse(),a=l.filter(live),f=vT(a),m=sumS(a,'material'),n=nT(a);
  return`<header><div><h1>Tatuagens e financeiro</h1><div class="sub">Quanto cobrou, quanto gastou de material e o lucro</div></div>${filt()}</header>
- <div class="grid">${statBox('💲','','R$ '+f.toLocaleString('pt-BR'),'Faturado')}${statBox('🧪','','R$ '+m.toLocaleString('pt-BR'),'Materiais')}${statBox('📈','','R$ '+(f-m).toLocaleString('pt-BR'),'Lucro das tatuagens',f-m<0?'neg':'')}${statBox('⏳','',R(sumS(a.filter(s=>!s.pago),'valor')),'A receber')}</div>
+ <div class="grid">${statBox('💲',n+(n==1?' tatuagem':' tatuagens'),'R$ '+f.toLocaleString('pt-BR'),'Faturado')}${statBox('🧪','','R$ '+m.toLocaleString('pt-BR'),'Materiais')}${statBox('📈','','R$ '+(f-m).toLocaleString('pt-BR'),'Lucro das tatuagens',f-m<0?'neg':'')}${statBox('⏳','',R(vT(a.filter(s=>!s.pago))),'A receber')}</div>
  <div class="bar"><button class="btn" onclick="addS()">+ Nova sessão</button></div>${l.map(s=>sessRow(s,1)).join('')||'<div class="empty">Sem sessões neste mês.</div>'}`}
 function vPes(){const l=db.personal.filter(p=>inP(p.data)).sort((a,b)=>b.data.localeCompare(a.data)),t=sumS(l,'valor');
  return`<header><div><h1>Custos pessoais</h1><div class="sub">Contas e gastos fora das tatuagens</div></div>${monthIn()}</header>
@@ -267,7 +323,7 @@ function vEst(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLow
  <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
  ${l.map(s=>{const lo=s.min>0&&s.qtd<=s.min;return`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${esc(s.cat)} · ${R(s.custo)} / ${esc(s.un)}</small></div><span class="bd ${lo?'x':''}">${esc(s.qtd)} ${esc(s.un)}</span><div class="acts"><button class="btn s" onclick="buy('${s.id}')">+ Compra</button><button class="btn s" onclick="use('${s.id}')">− Baixa</button></div></div>`}).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
 function toMD(){const T=(h,rows)=>rows.length?`| ${h.join(' | ')} |\n|${h.map(()=>'---').join('|')}|\n${rows.map(r=>'| '+r.map(x=>String(x==null?'':x).replace(/\|/g,'/')).join(' | ')+' |').join('\n')}\n`:'_Sem registros._\n';
- return`# HelpInk — Backup de ${db.studio}\nGerado em ${new Date().toLocaleString('pt-BR')}\n\n## Clientes\n${T(['Nome','Telefone','E-mail','Termo aceito'],db.clients.map(c=>[c.nome,c.tel,c.email,c.aceite?'Sim '+fd(c.aceiteData):'Não']))}\n## Tatuagens\n${T(['Data','Cliente','Serviço','Estilo','Tamanho (cm)','Cartuchos','Duração','Valor','Material','Status','Pago'],db.sessions.map(s=>[fd(s.data),cname(s.cid),s.desc,s.estilo,s.cm,s.cart,dur(s),s.valor,s.material,s.status,s.pago?'Sim':'Não']))}\n## Custos pessoais\n${T(['Data','Descrição','Categoria','Valor'],db.personal.map(p=>[fd(p.data),p.desc,p.cat,p.valor]))}\n## Estoque\n${T(['Material','Qtd','Comprado em','Acabou em'],db.stock.map(s=>[s.nome,s.qtd,fd(s.compra),s.fim?fd(s.fim):'Em uso']))}\n## Dados para importação (não edite)\n\`\`\`json\n${JSON.stringify(db)}\n\`\`\`\n`}
+ return`# HelpInk — Backup de ${db.studio}\nGerado em ${new Date().toLocaleString('pt-BR')}\n\n## Clientes\n${T(['Nome','Telefone','E-mail','Termo aceito'],db.clients.map(c=>[c.nome,c.tel,c.email,c.aceite?'Sim '+fd(c.aceiteData):'Não']))}\n## Tatuagens\n${T(['Data','Cliente','Serviço','Estilo','Tamanho (cm)','Cartuchos','Duração','Valor','Material','Status','Pago'],db.sessions.flatMap(s=>tats(s).map((t,i)=>[fd(s.data),cname(s.cid),t.desc,t.estilo,t.cm,t.cart,i?'':dur(s),t.valor,i?'':s.material,s.status,s.pago?'Sim':'Não'])))}\n## Custos pessoais\n${T(['Data','Descrição','Categoria','Valor'],db.personal.map(p=>[fd(p.data),p.desc,p.cat,p.valor]))}\n## Estoque\n${T(['Material','Qtd','Comprado em','Acabou em'],db.stock.map(s=>[s.nome,s.qtd,fd(s.compra),s.fim?fd(s.fim):'Em uso']))}\n## Dados para importação (não edite)\n\`\`\`json\n${JSON.stringify(db)}\n\`\`\`\n`}
 function vBkp(){return`<header><div><h1>Conta e backup</h1><div class="sub">Seus dados ficam salvos na nuvem, na sua conta</div></div></header>
  <div class="card" style="margin-bottom:14px"><h2>Sua conta</h2><div class="bar" style="margin:10px 0 0;justify-content:space-between"><div class="sub" style="margin:0">Conectado como <b>${esc(user&&user.email)}</b></div><button class="btn s d" onclick="sair()">Sair</button></div></div>
  <div class="card"><label>Nome do estúdio</label><input value="${esc(db.studio)}" onchange="db.studio=this.value||'Meu Estúdio';db.named=!!this.value;save()">
