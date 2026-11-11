@@ -617,13 +617,23 @@ function vLook(th){const L=look(),cust=RHEX.test(L.cor)?L.cor:'',pre=ACCENTS.fin
  const seg=(lbl,opts,cur,fn)=>`<div class="seg" role="group" aria-label="${lbl}">${opts.map(([k,l])=>`<button class="${cur===k?'on':''}" aria-pressed="${cur===k}" onclick="${fn}('${k}')">${l}</button>`).join('')}</div>`;
  return`<div class="panel"><h2>Aparência</h2><p class="sub">Cores e cantos valem para a sua conta em qualquer aparelho. O modo claro ou escuro é escolhido em cada aparelho.</p>
  <p class="opt-t">Cor principal</p><div class="sw">${ACCENTS.map(([k,n,c])=>`<button class="swb ${L.cor===k?'on':''}" style="background:${c};color:${onColor(c)}" onclick="setLook('cor','${k}')" aria-label="${n}" aria-pressed="${L.cor===k}" title="${n}">${L.cor===k?ic('check'):''}</button>`).join('')}
- <label class="swb cust ${cust?'on':''}" title="Escolher outra cor" ${cust?`style="background:${cust};color:${onColor(cust)}"`:''}>${cust?ic('check'):''}<input type="color" value="${cust||'#5536C8'}" aria-label="Escolher outra cor" onchange="setLook('cor',this.value)"></label></div>
- <p class="sub" style="margin-top:10px">${cust?'Cor personalizada '+cust.toUpperCase():esc(pre?pre[1]:ACCENTS[0][1])}. O tom é ajustado sozinho para o texto continuar legível no claro e no escuro.</p>
+ <label class="swb cust ${cust?'on':''}" title="Escolher outra cor" ${cust?`style="background:${cust};color:${onColor(cust)}"`:''}>${cust?ic('check'):''}<input type="color" value="${cust||'#5536C8'}" aria-label="Escolher outra cor" oninput="pickCor(this)" onchange="pickCor(this)"></label></div>
+ <p class="sub" id="corTxt" style="margin-top:10px">${cust?'Cor personalizada '+cust.toUpperCase():esc(pre?pre[1]:ACCENTS[0][1])}. O tom é ajustado sozinho para o texto continuar legível no claro e no escuro.</p>
  <p class="opt-t">Fundo</p>${seg('Fundo',FUNDOS,L.fundo,"setLook.bind(null,'fundo')")}
  <p class="opt-t">Cantos</p>${seg('Cantos',CANTOS,L.cantos,"setLook.bind(null,'cantos')")}
  <p class="opt-t">Modo neste aparelho</p>${seg('Modo',[['auto','Automático'],['light','Claro'],['dark','Escuro']],th,'setTheme')}
  <div class="look-pv" aria-hidden="true"><span class="btn sm">Botão principal</span><span class="btn s sm">Secundário</span><span class="bd">Confirmado</span><span class="bd p">Pendente</span></div>
- ${L.cor!=='estencil'||L.fundo!=='neutro'||L.cantos!=='suave'?'<button class="lnk" style="margin-top:12px" onclick="resetLook()">Voltar ao visual padrão do HelpInk</button>':''}</div>`}
+ <button class="lnk" id="lookReset" style="margin-top:12px" onclick="resetLook()" ${L.cor!=='estencil'||L.fundo!=='neutro'||L.cantos!=='suave'?'':'hidden'}>Voltar ao visual padrão do HelpInk</button></div>`}
+/* Cor personalizada: atualiza a tela no lugar, sem render(). No iPhone o Safari dispara input/change a cada
+   movimento do dedo; recriar o <input type=color> fechava o seletor no meio da escolha. */
+let corT;
+function pickCor(inp){const v=inp.value;if(!RHEX.test(v))return;db.cor=v;applyLook();
+ const lb=inp.parentNode;
+ lb.parentNode.querySelectorAll('.swb').forEach(b=>{if(b===lb)return;b.classList.remove('on');b.setAttribute('aria-pressed','false');const s=b.querySelector('svg');if(s)s.remove()});
+ lb.classList.add('on');lb.style.background=v;lb.style.color=onColor(v);if(!lb.querySelector('svg'))lb.insertAdjacentHTML('afterbegin',ic('check'));
+ const t=$('#corTxt');if(t)t.textContent='Cor personalizada '+v.toUpperCase()+'. O tom é ajustado sozinho para o texto continuar legível no claro e no escuro.';
+ const r=$('#lookReset');if(r)r.hidden=false;
+ clearTimeout(corT);corT=setTimeout(save,700)}
 function resetLook(){db.cor='';db.fundo='';db.cantos='';applyLook();save();render();toast('Visual padrão restaurado')}
 function vBkp(){const th=curTheme();
  return ph('Conta e backup','Seus dados ficam salvos na nuvem, na sua conta.')+
