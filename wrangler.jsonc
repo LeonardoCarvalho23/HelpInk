@@ -21,7 +21,9 @@
     "ACCESS_TEAM_DOMAIN": "https://broken-haze-2b33.cloudflareaccess.com",
     // Zero Trust → Access → Applications → (app) → Application Audience (AUD) Tag.
     // Se tiver mais de uma aplicação (ex.: workers.dev e domínio próprio), separe por vírgula.
-    "ACCESS_AUD": "a8c92075c123d0c74d443e82ed42ad068c2d95ab75db6786ede5d5834d1c6cea"
+    // f5ff…: aplicação "helpink.app.br" que protege só /app e /api (a página inicial é pública).
+    // a8c9…: proteção antiga do Worker inteiro, mantida enquanto houver sessões abertas com ela.
+    "ACCESS_AUD": "f5fff8ef742a89e76fd50e22fccc4207ceaa7ec96f000d00360bbc3e9f6bf73c,a8c92075c123d0c74d443e82ed42ad068c2d95ab75db6786ede5d5834d1c6cea"
   },
   "observability": { "enabled": true }
 }
