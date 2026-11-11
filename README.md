@@ -34,7 +34,6 @@ aprovado. Para liberar vagas de quem foi recusado, remova a pessoa também em
 ## Estrutura
 
 ```
-public/index.html          o app (telas)
 src/worker.js              API /api/* + verificação do login do Access + aprovação de contas
 migrations/0001_init.sql   tabela de dados (records)
 migrations/0002_users.sql  tabela de contas (users)
