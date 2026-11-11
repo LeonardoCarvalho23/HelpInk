@@ -13,6 +13,14 @@ const MAX_BODY = 4 * 1024 * 1024;         // 4 MB por requisição
 const MAX_RECORD = 64 * 1024;             // 64 KB por registro (um cliente, uma sessão…)
 const MAX_RECORDS_PER_USER = 50000;       // teto de linhas por usuário
 
+// Perfil do estúdio: só campos conhecidos; foto apenas como imagem embutida (data URL) JPEG/PNG/WebP de até ~50 KB
+const RE_PHOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
+const META_KEYS = { studio: v => typeof v === 'string' && v.length <= 80, named: v => typeof v === 'boolean',
+  photo: v => v === '' || (typeof v === 'string' && v.length <= 70000 && RE_PHOTO.test(v)),
+  cor: v => v === '' || /^(estencil|tradicional|jade|tinta|rosa|grafite)$/.test(v) || /^#[0-9a-fA-F]{6}$/.test(v),
+  fundo: v => v === '' || ['neutro', 'tingido', 'quente'].includes(v), cantos: v => v === '' || ['suave', 'reto', 'redondo'].includes(v) };
+const okMeta = d => Object.keys(d).every(k => META_KEYS[k] && META_KEYS[k](d[k]));
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -133,6 +141,7 @@ export default {
         for (const r of ups) {
           if (!okKey(r) || !r.data || typeof r.data !== 'object' || Array.isArray(r.data))
             return json({ error: 'Registro inválido' }, 400);
+          if (r.col === 'meta' && !okMeta(r.data)) return json({ error: 'Perfil inválido' }, 400);
           const data = JSON.stringify(r.data);
           if (data.length > MAX_RECORD) return json({ error: 'Registro grande demais' }, 413);
           rows.push([email, r.col, r.id, data]);
