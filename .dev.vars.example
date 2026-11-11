@@ -1,0 +1,3 @@
+# Copie para .dev.vars para testar com "npm run dev" (sem Cloudflare Access).
+# Só vale em localhost e o arquivo .dev.vars não é publicado.
+DEV_EMAIL=teste@exemplo.com

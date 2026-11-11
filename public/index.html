@@ -43,11 +43,16 @@ label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}label.ck{di
 .acts{display:flex;gap:6px}.empty{text-align:center;color:var(--mu);padding:28px}
 textarea.big{min-height:200px;font-family:monospace;font-size:12px}
 .pos{color:var(--gt)}.neg{color:var(--rdt)}
+.auth{min-height:100vh;display:grid;place-items:center;padding:16px}.auth .card{width:100%;max-width:400px;padding:26px}
+.auth .logo{display:flex;color:var(--tx);padding:0 0 18px}.auth .logo span{display:inline}.note.neg{color:var(--rdt);background:var(--rd)}
+.alinks{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:14px}.alinks a{color:var(--gt);text-decoration:none}
+#sync{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;z-index:60;font-size:13px;padding:6px 12px;border-radius:99px;background:var(--in);color:var(--mu);border:1px solid var(--bd)}
+#sync.err{background:var(--rd);color:var(--rdt);cursor:pointer}#sync.hide{display:none}
 @media(max-width:1023px){nav{width:72px;align-items:center}nav button span,.logo span{display:none}nav button{padding:12px}main{margin-left:72px;padding:22px}.grid{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){nav{top:auto;width:100%;height:calc(62px + env(safe-area-inset-bottom,0px));flex-direction:row;justify-content:space-around;padding:6px 4px env(safe-area-inset-bottom,0px);gap:0}.logo{display:none}
 nav button{flex-direction:column;gap:2px;padding:6px 8px;font-size:10px}nav button span{display:block}main{margin-left:0;padding:16px 14px 90px}h1{font-size:21px}.f2{grid-template-columns:1fr}.grid{gap:10px}.row .v{text-align:left}}
 </style></head><body>
-<div id="app"><nav id="nav"></nav><main id="main"></main></div><div id="mod"></div>
+<div id="auth"></div><div id="app" style="display:none"><nav id="nav"></nav><main id="main"></main></div><div id="mod"></div><div id="sync" class="hide"></div>
 <script>
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -62,21 +67,45 @@ function toT(s){s=s.trim();if(!s)return'';const m=/^(\d{1,2}):?(\d{2})$/.exec(s)
 let est='';const ESTILOS=['Realismo','Blackwork','Fineline','Old School (Tradicional)','Neotradicional','Aquarela','Geométrico','Pontilhismo (Dotwork)','Oriental / Irezumi','Tribal','Maori','Lettering','Minimalista','Biomecânico','Surrealismo','Trash Polka','Cobertura (Cover-up)','Retoque','Outro'];
 function filt(){return`<div style="display:flex;gap:8px;flex-wrap:wrap">${monthIn()}<select style="width:auto" onchange="est=this.value;render()"><option value="">Todos os estilos</option>${ESTILOS.map(e=>`<option ${e===est?'selected':''}>${e}</option>`).join('')}</select></div>`}
 const MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-let db={studio:'Meu Estúdio',clients:[],sessions:[],personal:[],stock:[],buys:[]},tab='dash',per=today().slice(0,7),q='';
-/* ---- Armazenamento: cookies (em blocos) + espelho em localStorage ---- */
-const CK='bink',CH=3000;
-function save(){const s=JSON.stringify(db);
- try{localStorage.setItem(CK,s)}catch(e){}
- try{const e=encodeURIComponent(s),n=Math.ceil(e.length/CH);
-  for(let i=0;i<n;i++)document.cookie=`${CK}${i}=${e.slice(i*CH,(i+1)*CH)};max-age=31536000;path=/;SameSite=Lax`;
-  document.cookie=`${CK}n=${n};max-age=31536000;path=/;SameSite=Lax`;
-  for(let i=n;i<n+30;i++)document.cookie=`${CK}${i}=;max-age=0;path=/`;}catch(e){}}
-function load(){let s=null;
+const COLS=['clients','sessions','personal','stock','buys'];
+const blank=()=>({studio:'Meu Estúdio',clients:[],sessions:[],personal:[],stock:[],buys:[]});
+let db=blank(),tab='dash',per=today().slice(0,7),q='';
+/* ---- Banco de dados (Cloudflare D1 via /api): cada item é uma linha em records ---- */
+let user=null,snap=null,queue=Promise.resolve(),pend=0,syncErr=null;
+async function api(path,body){let r;
+ try{r=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body&&JSON.stringify(body),credentials:'same-origin',redirect:'manual',cache:'no-store'})}
+ catch(e){throw new Error('Sem conexão com o servidor. Verifique sua internet.')}
+ // Sessão do Cloudflare Access expirada: a resposta vira um redirecionamento para a tela de login
+ if(r.type==='opaqueredirect'||r.status===401||r.status===403){const e=new Error('Sua sessão expirou. Entre novamente.');e.auth=1;throw e}
+ const j=await r.json().catch(()=>null);if(!r.ok||!j)throw new Error((j&&j.error)||'Erro do servidor ('+r.status+')');return j}
+const meta=()=>({studio:db.studio,named:!!db.named});
+// Foto do estado atual: "coleção|id" -> JSON. Comparando com a última foto salva sabemos o que mudou.
+function snapshot(){const m=new Map([['meta|profile',JSON.stringify(meta())]]);for(const c of COLS)for(const r of db[c]||[])m.set(c+'|'+r.id,JSON.stringify(r));return m}
+async function sync(){if(!user||!snap)return;const cur=snapshot(),ups=[],dels=[];
+ for(const[k,s]of cur)if(snap.get(k)!==s){const i=k.indexOf('|');ups.push({col:k.slice(0,i),id:k.slice(i+1),data:JSON.parse(s)})}
+ for(const k of snap.keys())if(!cur.has(k)){const i=k.indexOf('|');dels.push({col:k.slice(0,i),id:k.slice(i+1)})}
+ for(let i=0;i<ups.length;i+=200)await api('/api/sync',{ups:ups.slice(i,i+200),dels:[]});
+ for(let i=0;i<dels.length;i+=200)await api('/api/sync',{ups:[],dels:dels.slice(i,i+200)});
+ snap=cur}
+function save(){pend++;showSync();queue=queue.then(sync).then(()=>{syncErr=null},e=>{console.error(e);syncErr=e}).then(()=>{pend--;showSync()});return queue}
+function showSync(){const e=$('#sync');if(!e)return;
+ if(pend){e.className='';e.textContent='Salvando…';e.onclick=null}
+ else if(syncErr&&syncErr.auth){e.className='err';e.textContent='⚠ Sessão expirada — toque para entrar de novo (a última alteração não foi salva)';e.onclick=()=>{syncErr=null;location.reload()}}
+ else if(syncErr){e.className='err';e.textContent='⚠ Não foi possível salvar — toque para tentar de novo';e.onclick=()=>save()}
+ else{e.className='hide';e.onclick=null}}
+addEventListener('beforeunload',e=>{if(pend||syncErr){e.preventDefault();e.returnValue=''}});
+async function loadDB(){const r=await api('/api/data'),rows=r.rows;user={email:r.email};
+ db=blank();for(const r of rows){if(r.col==='meta')Object.assign(db,{studio:r.data.studio||'Meu Estúdio',named:!!r.data.named});else if(db[r.col])db[r.col].push(r.data)}
+ snap=snapshot();syncErr=null;return rows.length}
+/* ---- Dados antigos (versão que salvava em cookies/localStorage neste navegador) ---- */
+const CK='bink';
+function legacy(){let s=null;
  try{const c=Object.fromEntries(document.cookie.split('; ').map(x=>x.split(/=(.*)/s).slice(0,2)));const n=+c[CK+'n'];
   if(n){let p='';for(let i=0;i<n;i++)p+=c[CK+i]||'';s=decodeURIComponent(p)}}catch(e){}
  if(!s)try{s=localStorage.getItem(CK)}catch(e){}
- try{if(s)db=Object.assign(db,JSON.parse(s))}catch(e){}}
-load();
+ try{const d=s&&JSON.parse(s);return d&&(d.named||COLS.some(c=>(d[c]||[]).length))?d:null}catch(e){return null}}
+function clearLegacy(){try{localStorage.removeItem(CK)}catch(e){}
+ try{for(let i=0;i<60;i++)document.cookie=`${CK}${i}=;max-age=0;path=/`;document.cookie=`${CK}n=;max-age=0;path=/`}catch(e){}}
 /* ---- Modal / formulário genérico ---- */
 function form(title,fields,v,ok,del){v=v||{};
  const h=fields.map(f=>{if(f.t==='note')return`<div class="note">${f.l}</div>`;
@@ -121,7 +150,7 @@ const edK=id=>{const s=db.stock.find(x=>x.id===id);form('Material',stockF,s,o=>O
 const buy=id=>{const s=db.stock.find(x=>x.id===id);form('Compra: '+esc(s.nome),[{k:'qtd',l:'Quantidade comprada',t:'number',w:1,r:1},{k:'custo',l:'Custo unitário (R$)',t:'number',d:s.custo,w:1},{k:'data',l:'Data',t:'date',d:today()}],{},o=>{s.qtd=(+s.qtd||0)+o.qtd;s.custo=o.custo||s.custo;db.buys.push({id:uid(),sid:id,...o})})};
 const use=id=>{const s=db.stock.find(x=>x.id===id);form('Baixa: '+esc(s.nome),[{k:'qtd',l:'Quantidade usada',t:'number',r:1}],{},o=>s.qtd=Math.max(0,(+s.qtd||0)-o.qtd))};
 /* ---- Telas ---- */
-const NAV=[['dash','📊','Dashboard'],['cli','👥','Clientes'],['ses','🎨','Tatuagens'],['pes','💳','Pessoal'],['est','📦','Estoque'],['bkp','💾','Backup']];
+const NAV=[['dash','📊','Dashboard'],['cli','👥','Clientes'],['ses','🎨','Tatuagens'],['pes','💳','Pessoal'],['est','📦','Estoque'],['bkp','⚙️','Conta']];
 function go(t){tab=t;q='';render();window.scrollTo(0,0)}
 const monthIn=()=>{const[y,m]=per.split('-'),Y=new Date().getFullYear();let ys='';for(let i=Y-5;i<=Y+1;i++)ys+=`<option ${i==y?'selected':''}>${i}</option>`;
  return`<div class="bar" style="margin:0;gap:6px"><select style="width:auto" onchange="per=$('#pY').value+'-'+this.value;render()">${MES.map((n,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${v===m?'selected':''}>${n}</option>`}).join('')}</select><select id="pY" style="width:auto" onchange="per=this.value+'-${m}';render()">${ys}</select></div>`};
@@ -158,7 +187,8 @@ function vEst(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLow
  ${l.map(s=>{const lo=s.min>0&&s.qtd<=s.min;return`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${esc(s.cat)} · ${R(s.custo)} / ${esc(s.un)}</small></div><span class="bd ${lo?'x':''}">${s.qtd} ${esc(s.un)}</span><div class="acts"><button class="btn s" onclick="buy('${s.id}')">+ Compra</button><button class="btn s" onclick="use('${s.id}')">− Baixa</button></div></div>`}).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
 function toMD(){const T=(h,rows)=>rows.length?`| ${h.join(' | ')} |\n|${h.map(()=>'---').join('|')}|\n${rows.map(r=>'| '+r.map(x=>String(x==null?'':x).replace(/\|/g,'/')).join(' | ')+' |').join('\n')}\n`:'_Sem registros._\n';
  return`# HelpInk — Backup de ${db.studio}\nGerado em ${new Date().toLocaleString('pt-BR')}\n\n## Clientes\n${T(['Nome','Telefone','E-mail','Termo aceito'],db.clients.map(c=>[c.nome,c.tel,c.email,c.aceite?'Sim '+fd(c.aceiteData):'Não']))}\n## Tatuagens\n${T(['Data','Cliente','Serviço','Estilo','Tamanho (cm)','Cartuchos','Duração','Valor','Material','Status','Pago'],db.sessions.map(s=>[fd(s.data),cname(s.cid),s.desc,s.estilo,s.cm,s.cart,dur(s),s.valor,s.material,s.status,s.pago?'Sim':'Não']))}\n## Custos pessoais\n${T(['Data','Descrição','Categoria','Valor'],db.personal.map(p=>[fd(p.data),p.desc,p.cat,p.valor]))}\n## Estoque\n${T(['Material','Qtd','Comprado em','Acabou em'],db.stock.map(s=>[s.nome,s.qtd,fd(s.compra),s.fim?fd(s.fim):'Em uso']))}\n## Dados para importação (não edite)\n\`\`\`json\n${JSON.stringify(db)}\n\`\`\`\n`}
-function vBkp(){return`<header><div><h1>Backup e dados</h1><div class="sub">Seus dados ficam salvos em cookies neste navegador</div></div></header>
+function vBkp(){return`<header><div><h1>Conta e backup</h1><div class="sub">Seus dados ficam salvos na nuvem, na sua conta</div></div></header>
+ <div class="card" style="margin-bottom:14px"><h2>Sua conta</h2><div class="bar" style="margin:10px 0 0;justify-content:space-between"><div class="sub" style="margin:0">Conectado como <b>${esc(user&&user.email)}</b></div><button class="btn s d" onclick="sair()">Sair</button></div></div>
  <div class="card"><label>Nome do estúdio</label><input value="${esc(db.studio)}" onchange="db.studio=this.value||'Meu Estúdio';db.named=!!this.value;save()">
  <h2 style="margin-top:22px">Exportar para .md</h2><div class="bar" style="margin-top:10px"><button class="btn" onclick="dl()">⬇ Baixar arquivo .md</button><button class="btn s" onclick="cp()">Copiar texto</button></div>
  <div class="sub">Se o download for bloqueado pelo navegador, copie o texto abaixo e salve num arquivo .md.</div><textarea class="big" id="out" readonly onfocus="this.select()" style="margin-top:10px">${esc(toMD())}</textarea>
@@ -181,5 +211,15 @@ function render(){$('#nav').innerHTML=`<div class="logo"><b>H</b><span>HelpInk</
 function askName(){$('#mod').innerHTML=`<div class="modal"><div><h2>Bem-vindo ao HelpInk! 👋</h2><div class="sub">Como devemos chamar você ou o seu estúdio?</div><label>Seu nome ou nome do estúdio</label><input id="nm" maxlength="40" placeholder="Ex.: Estúdio do Amin"><div class="bar" style="margin:18px 0 0"><button class="btn" id="nmok">Começar</button></div></div></div>`;
  const ok=()=>{const v=$('#nm').value.trim();if(!v){$('#nm').focus();return}db.studio=v;db.named=1;save();closeM();render()};
  $('#nmok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()};setTimeout(()=>$('#nm').focus(),50)}
-render();if(!db.named&&(!db.studio||db.studio==='Meu Estúdio'))askName();
+/* ---- Conta (o login é feito pelo Cloudflare Access antes de o site abrir) ---- */
+function screen(h){$('#app').style.display='none';closeM();const A=$('#auth');A.style.display='';A.innerHTML=`<div class="auth"><div class="card"><div class="logo"><b>H</b><span>HelpInk</span></div>${h}</div></div>`}
+async function start(){snap=null;screen('<div class="sub">Carregando seus dados…</div>');
+ try{const n=await loadDB();
+  if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=Object.assign(blank(),L);await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pela opção "toque para tentar de novo".');else clearLegacy()}}
+ }catch(e){console.error(e);screen(`<h2>Não foi possível carregar</h2><div class="note neg">${esc(e.message)}</div><div class="bar" style="margin:18px 0 0"><button class="btn" onclick="location.reload()">${e.auth?'Entrar':'Tentar de novo'}</button></div>`);return}
+ $('#auth').style.display='none';$('#app').style.display='';tab='dash';render();showSync();
+ if(!db.named&&(!db.studio||db.studio==='Meu Estúdio'))askName()}
+async function sair(){await queue;if(syncErr&&!syncErr.auth&&!confirm('Algumas alterações não foram salvas e serão perdidas. Sair mesmo assim?'))return;
+ syncErr=null;location.href='/cdn-cgi/access/logout'}
+start();
 </script></body></html>

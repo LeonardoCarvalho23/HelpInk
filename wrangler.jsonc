@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "helpink",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "helpink",
+      "database_id": "841b5884-76d8-4788-998f-f526dc3c598d",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    // Zero Trust → Settings → Custom Pages/Team domain. Ex.: https://minhaequipe.cloudflareaccess.com
+    "ACCESS_TEAM_DOMAIN": "https://SUA-EQUIPE.cloudflareaccess.com",
+    // Zero Trust → Access → Applications → (app) → Application Audience (AUD) Tag.
+    // Se tiver mais de uma aplicação (ex.: workers.dev e domínio próprio), separe por vírgula.
+    "ACCESS_AUD": "COLE-AQUI-O-AUD"
+  },
+  "observability": { "enabled": true }
+}
