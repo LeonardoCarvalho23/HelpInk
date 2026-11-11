@@ -16,6 +16,8 @@
       "migrations_dir": "migrations"
     }
   ],
+  // Fotos do resultado das tatuagens (R2). Limites e teto geral em src/worker.js (ownerPhotos).
+  "r2_buckets": [{ "binding": "FOTOS", "bucket_name": "helpink-fotos" }],
   "vars": {
     // Zero Trust → Settings → Custom Pages/Team domain. Ex.: https://minhaequipe.cloudflareaccess.com
     "ACCESS_TEAM_DOMAIN": "https://broken-haze-2b33.cloudflareaccess.com",

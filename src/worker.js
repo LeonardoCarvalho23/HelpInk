@@ -60,13 +60,13 @@ export default {
     }
 
     try {
-      // Proteção contra envio a partir de outros sites (vale para todo POST)
-      if (req.method === 'POST') {
-        if (!(req.headers.get('content-type') || '').includes('application/json'))
-          return json({ error: 'Content-Type inválido' }, 415);
+      // Proteção contra envio a partir de outros sites (vale para tudo que altera dados)
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
         const origin = req.headers.get('origin');
         if (origin && origin !== url.origin) return json({ error: 'Origem não permitida' }, 403);
       }
+      if (req.method === 'POST' && !(req.headers.get('content-type') || '').includes('application/json'))
+        return json({ error: 'Content-Type inválido' }, 415);
 
       const acc = await account(env, email);
 
@@ -122,6 +122,7 @@ export default {
 
       if (url.pathname === '/api/forms' || url.pathname === '/api/forms/doc') return await ownerForms(req, env, url, email);
       if (url.pathname === '/api/agenda') return await ownerAgenda(req, env, email);
+      if (url.pathname === '/api/photo') return await ownerPhotos(req, env, url, email);
 
       if (url.pathname === '/api/data' && req.method === 'GET') {
         const { results } = await env.DB
@@ -488,6 +489,49 @@ async function ownerAgenda(req, env, email) {
     ON CONFLICT (owner, client_id) DO UPDATE SET token = excluded.token, created_at = excluded.created_at`)
     .bind(email, b.client_id, row.token, row.created_at).run();
   return json(row);
+}
+
+/* ---------------- Fotos do resultado (R2) ---------------- */
+// O app reduz a foto e regrava em JPEG antes de enviar (isso também apaga GPS e outros metadados).
+// Cada conta só enxerga as próprias fotos: a chave no R2 começa pelo SHA-256 do e-mail.
+const RE_PHOTO_ID = /^[0-9a-f]{24}$/;
+const MAX_PHOTO_BYTES = 1536 * 1024;              // 1,5 MB por foto
+const MAX_PHOTOS_PER_USER = 1500;
+const MAX_PHOTO_BYTES_TOTAL = 9 * 1024 ** 3;      // teto geral de 9 GB: o R2 gratuito vai até 10 GB
+async function ownerPhotos(req, env, url, email) {
+  if (!env.FOTOS) return json({ error: 'Armazenamento de fotos não configurado' }, 503);
+  const key = async id => hex(await sha256(email)).slice(0, 32) + '/' + id;
+  if (req.method === 'PUT') {
+    if ((req.headers.get('content-type') || '') !== 'image/jpeg') return json({ error: 'Envie a foto em JPEG' }, 415);
+    if ((+req.headers.get('content-length') || 0) > MAX_PHOTO_BYTES) return json({ error: 'Foto grande demais' }, 413);
+    const buf = new Uint8Array(await req.arrayBuffer());
+    if (buf.length > MAX_PHOTO_BYTES) return json({ error: 'Foto grande demais' }, 413);
+    if (buf.length < 100 || buf[0] !== 0xff || buf[1] !== 0xd8 || buf[2] !== 0xff) return json({ error: 'Arquivo de imagem inválido' }, 400);
+    const mine = await env.DB.prepare('SELECT COUNT(*) AS n FROM photos WHERE owner = ?').bind(email).first();
+    if (mine && mine.n >= MAX_PHOTOS_PER_USER) return json({ error: `Limite de ${MAX_PHOTOS_PER_USER} fotos da conta atingido. Apague fotos antigas para enviar novas.` }, 413);
+    const all = await env.DB.prepare('SELECT COALESCE(SUM(bytes), 0) AS b FROM photos').first();
+    if (all && all.b + buf.length > MAX_PHOTO_BYTES_TOTAL) return json({ error: 'O espaço de fotos do HelpInk está cheio. Avise o administrador.' }, 507);
+    const id = hex(crypto.getRandomValues(new Uint8Array(12)));
+    await env.FOTOS.put(await key(id), buf, { httpMetadata: { contentType: 'image/jpeg' } });
+    await env.DB.prepare('INSERT INTO photos (owner, id, bytes, created_at) VALUES (?, ?, ?, ?)').bind(email, id, buf.length, nowIso()).run();
+    return json({ id });
+  }
+  const id = url.searchParams.get('id') || '';
+  if (!RE_PHOTO_ID.test(id)) return json({ error: 'Foto inválida' }, 400);
+  if (req.method === 'GET') {
+    const o = await env.FOTOS.get(await key(id));
+    if (!o) return json({ error: 'Foto não encontrada' }, 404);
+    return new Response(o.body, { headers: {
+      'content-type': 'image/jpeg', 'cache-control': 'private, max-age=31536000, immutable',
+      'x-content-type-options': 'nosniff', 'content-security-policy': "default-src 'none'", 'referrer-policy': 'no-referrer'
+    } });
+  }
+  if (req.method === 'DELETE') {
+    await env.FOTOS.delete(await key(id));
+    await env.DB.prepare('DELETE FROM photos WHERE owner = ? AND id = ?').bind(email, id).run();
+    return json({ ok: true });
+  }
+  return json({ error: 'Método não permitido' }, 405);
 }
 
 // Rotas do tatuador (com login): listar, criar link, novo link, cancelar, baixar documento.

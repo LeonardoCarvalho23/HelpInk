@@ -140,6 +140,37 @@ label.ck{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:15p
 .row:has(.r-fx){flex-wrap:wrap;row-gap:10px}
 .r-fx{order:9;width:100%;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-left:64px}
 .r-fx .btn.sm{padding:0 10px}
+/* Fotos do resultado */
+.fotos{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.ft{position:relative;width:76px;height:76px}
+.ftimg{width:100%;height:100%;padding:0;border:1px solid var(--line);border-radius:var(--r-in);overflow:hidden;cursor:zoom-in;background:var(--raised);display:block}
+.ftimg img{width:100%;height:100%;object-fit:cover;display:block}
+.ftx{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer}
+.ftx svg.i{width:14px;height:14px}
+label.ftadd{position:relative;width:76px;height:76px;margin:0;border:1.5px dashed var(--stencil-line);border-radius:var(--r-in);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11.5px;line-height:1.2;font-weight:500;text-align:center;color:var(--stencil);background:var(--stencil-soft);padding:4px;cursor:pointer}
+.ftadd input{position:absolute;width:1px;height:1px;opacity:0;min-height:0}
+.ftadd:focus-within{outline:2px solid var(--stencil);outline-offset:2px}
+.ftadd.busy{opacity:.6;pointer-events:none}
+.fcnt{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--mute)}.fcnt svg.i{width:15px;height:15px}
+#lb{position:fixed;inset:0;z-index:100;background:rgba(10,8,14,.92);display:grid;place-items:center;padding:16px;cursor:zoom-out}
+#lb img{max-width:100%;max-height:100%;border-radius:8px}
+#lb .ib{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;color:#fff}
+/* Calendário do mês */
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cw,.cg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cw{background:var(--raised);border-bottom:1px solid var(--line)}
+.cw span{padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--mute)}
+.cd{min-height:104px;min-width:0;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:none;text-align:left;padding:6px;display:flex;flex-direction:column;gap:3px;font:inherit;color:var(--ink);cursor:pointer}
+.cd:nth-child(7n){border-right:0}
+.cd.out{cursor:default;background:var(--raised)}
+button.cd:hover{background:var(--raised)}
+.cn{font-size:13px;font-weight:600;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;flex:none}
+.cd.hoje .cn{background:var(--stencil);color:var(--stencil-ink)}
+.cd.sel{box-shadow:inset 0 0 0 2px var(--stencil)}
+.ce{display:block;font-size:12px;line-height:1.35;padding:2px 6px;border-radius:6px;background:var(--ok-soft);color:var(--ok);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ce.p{background:var(--warn-soft);color:var(--warn)}.ce.x{background:var(--raised);color:var(--mute);text-decoration:line-through}
+.cm{font-size:12px;color:var(--mute);padding-left:4px}
+.cdots{display:none;gap:3px}.cdots i{width:6px;height:6px;border-radius:50%;background:var(--ok)}.cdots i.p{background:var(--warn)}.cdots i.x{background:var(--line-2)}
 
 /* ---- Status ---- */
 .bd{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;line-height:1;white-space:nowrap;padding:5px 9px 5px 8px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
@@ -234,6 +265,7 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;word-break:bre
  .row.wide .r-end{order:3;width:100%;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:6px 12px;padding-left:64px;text-align:left}
  .row.wide .r-end small{flex-basis:100%}
  .r-fx{padding-left:0}
+ .cd{min-height:56px;align-items:center;padding:5px 2px;gap:4px}.ce,.cm{display:none}.cdots{display:flex}.cw span{text-align:center;padding:8px 0}
  .row.usr .acts{width:100%;padding-left:54px}
  .row.cli{flex-wrap:nowrap;align-items:flex-start}.row.cli>.btn{align-self:center}
  .mstep span{min-width:120px}
@@ -275,6 +307,7 @@ const ICONS={home:'<path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.
  chevL:'<path d="m14.5 6-6 6 6 6"/>',chevR:'<path d="m9.5 6 6 6-6 6"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',
  down:'<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>',
  send:'<path d="M20.5 3.5 10 14M20.5 3.5 14 20.5l-4-6.5-6.5-4z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+ cam:'<path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
  cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',refresh:'<path d="M20 11a8 8 0 0 0-14.3-4.6L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.6L20 16M20 20v-4h-4"/>'};
 const ic=(n,cls)=>`<svg class="i ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
@@ -292,6 +325,7 @@ function dlg(title,body,foot,bk){
 const ferr=m=>{const e=$('#ferr');if(e){e.textContent=m;e.scrollIntoView({block:'nearest'})}else alert(m)};
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;clearTimeout(toastT);toastT=setTimeout(()=>t.textContent='',3200)}
 document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&$('#lb')){e.preventDefault();$('#lb').remove();return}
  if(e.key==='Escape'&&$('#mod').innerHTML){e.preventDefault();(window.bk||closeM)()}
  if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[role=button]')&&e.target.tagName!=='BUTTON'){e.preventDefault();e.target.click()}});
 // Mês: "‹ novembro de 2026 ›"
@@ -393,7 +427,7 @@ const SAN={clients:{d:['nasc','aceiteData']},sessions:{d:['data'],t:['hora','fim
 // Tatuagens de uma sessão. Sessões antigas (uma tatuagem só, nos campos da sessão) viram uma lista de 1 item.
 const num=v=>{const n=+v;return v===''||v==null||typeof v==='boolean'||!isFinite(n)?0:n};
 function tatList(r){const a=Array.isArray(r.tatuagens)&&r.tatuagens.length?r.tatuagens:[{desc:r.desc,estilo:r.estilo,cm:r.cm,cart:r.cart,valor:r.valor}];
- const l=a.slice(0,30).filter(t=>t&&typeof t==='object'&&!Array.isArray(t)).map(t=>({desc:typeof t.desc==='string'?t.desc.slice(0,300):'',estilo:typeof t.estilo==='string'?t.estilo.slice(0,60):'',cm:num(t.cm),cart:num(t.cart),valor:num(t.valor)}));
+ const l=a.slice(0,30).filter(t=>t&&typeof t==='object'&&!Array.isArray(t)).map(t=>({desc:typeof t.desc==='string'?t.desc.slice(0,300):'',estilo:typeof t.estilo==='string'?t.estilo.slice(0,60):'',cm:num(t.cm),cart:num(t.cart),valor:num(t.valor),fotos:Array.isArray(t.fotos)?t.fotos.filter(f=>typeof f==='string'&&/^[0-9a-f]{24}$/.test(f)).slice(0,10):[]}));
  return l.length?l:[{desc:'',estilo:'',cm:0,cart:0,valor:0}]}
 function sanitize(d){const o=blank();let drop=0;if(!d||typeof d!=='object')return o;
  if(typeof d.studio==='string'&&d.studio.trim())o.studio=d.studio.slice(0,80);o.named=!!d.named;
@@ -479,21 +513,32 @@ function sessForm(title,s,ok,del){s=s||{};let items=tats(s).map(t=>({...t}));
  <div class="f2" style="margin-top:8px"><div><label for="s_material">Custo dos materiais (R$)</label>${numIn('s_material',v('material',''),'0.01')}</div>
  <div style="display:flex;align-items:flex-end"><label class="ck" style="margin:0 0 12px"><input type="checkbox" id="s_pago" ${s.pago?'checked':''}>Pagamento recebido</label></div>
  <div class="full"><label for="s_obs">Observações</label><textarea id="s_obs" rows="3">${esc(v('obs',''))}</textarea></div></div>`,
- `${del?'<button class="btn d" id="dl">Excluir</button>':''}<span class="sp"></span><button class="btn s" onclick="closeM()">Cancelar</button><button class="btn" id="sv">Salvar sessão</button>`);
- const read=()=>{items=items.map((t,i)=>({desc:$('#t_desc_'+i).value.trim(),estilo:$('#t_estilo_'+i).value,cm:parseFloat($('#t_cm_'+i).value)||0,cart:parseFloat($('#t_cart_'+i).value)||0,valor:parseFloat($('#t_valor_'+i).value)||0}));return items};
+ `${del?'<button class="btn d" id="dl">Excluir</button>':''}<span class="sp"></span><button class="btn s" onclick="bk()">Cancelar</button><button class="btn" id="sv">Salvar sessão</button>`);
+ const orig=new Set(items.flatMap(t=>t.fotos||[])),novos=new Set(); // fotos já salvas e fotos enviadas agora
+ const read=()=>{items=items.map((t,i)=>({fotos:t.fotos||[],desc:$('#t_desc_'+i).value.trim(),estilo:$('#t_estilo_'+i).value,cm:parseFloat($('#t_cm_'+i).value)||0,cart:parseFloat($('#t_cart_'+i).value)||0,valor:parseFloat($('#t_valor_'+i).value)||0}));return items};
  const tot=()=>{const t=read(),n=t.length,val=t.reduce((a,x)=>a+x.valor,0);$('#ttot').innerHTML=`${n} ${n==1?'tatuagem':'tatuagens'}, total <b>${R(val)}</b>`};
  const draw=focus=>{$('#tlist').innerHTML=items.map((t,i)=>`<div class="tat"><div class="tath"><b>Tatuagem ${i+1}</b>${items.length>1?`<button class="btn d sm" onclick="tatDel(${i})" aria-label="Remover tatuagem ${i+1}">Remover</button>`:''}</div>
   <div class="f2"><div class="full"><label for="t_desc_${i}">Descrição *</label><input id="t_desc_${i}" maxlength="300" placeholder="Ex.: rosa no antebraço" value="${esc(t.desc)}"></div>
   <div class="full"><label for="t_estilo_${i}">Estilo</label>${sel('t_estilo_'+i,[['','Selecione o estilo'],...ESTILOS],t.estilo)}</div>
   <div class="f3 full"><div><label for="t_cm_${i}">Tamanho (cm)</label>${numIn('t_cm_'+i,t.cm,'0.1')}</div><div><label for="t_cart_${i}">Cartuchos</label>${numIn('t_cart_'+i,t.cart,'1')}</div>
-  <div><label for="t_valor_${i}">Valor (R$)</label>${numIn('t_valor_'+i,t.valor,'0.01')}</div></div></div></div>`).join('');
+  <div><label for="t_valor_${i}">Valor (R$)</label>${numIn('t_valor_'+i,t.valor,'0.01')}</div></div></div>
+  <div class="fotos" aria-label="Fotos do resultado da tatuagem ${i+1}">${(t.fotos||[]).map((id,j)=>`<div class="ft"><button type="button" class="ftimg" onclick="fotoVer('${id}')" aria-label="Ver foto ${j+1}"><img src="/api/photo?id=${id}" alt="" loading="lazy"></button><button type="button" class="ftx" onclick="fotoDel(${i},${j})" aria-label="Remover foto ${j+1}">${ic('x')}</button></div>`).join('')}
+  ${(t.fotos||[]).length<10?`<label class="ftadd" id="tfa_${i}">${ic('cam')}<span>Adicionar foto</span><input type="file" accept="image/*" multiple onchange="fotoAdd(${i},this)"></label>`:''}</div></div>`).join('');
   for(let i=0;i<items.length;i++)$('#t_valor_'+i).oninput=tot;tot();
   if(focus!=null){const e=$('#t_desc_'+focus);e.scrollIntoView({block:'center',behavior:'smooth'});e.focus()}};
- window.tatDel=i=>{read();const t=items[i];if((t.desc||t.valor)&&!confirm('Remover a tatuagem '+(i+1)+(t.desc?' ('+t.desc+')':'')+'?'))return;items.splice(i,1);draw()};
+ window.tatDel=i=>{read();const t=items[i];if((t.desc||t.valor||t.fotos.length)&&!confirm('Remover a tatuagem '+(i+1)+(t.desc?' ('+t.desc+')':'')+(t.fotos.length?' e as fotos dela':'')+'?'))return;items.splice(i,1);draw()};
+ // Fotos: enviadas na hora; as removidas só são apagadas ao salvar, e as novas são descartadas se você cancelar
+ window.fotoAdd=async(i,inp)=>{const files=[...inp.files];inp.value='';read();const lb=$('#tfa_'+i);
+  if(lb){lb.classList.add('busy');lb.querySelector('span').textContent='Enviando…'}
+  let n=0;for(const f of files){if(items[i].fotos.length>=10){ferr('Cada tatuagem aceita até 10 fotos.');break}
+   try{const id=await upFoto(await shrink(f));items[i].fotos=[...items[i].fotos,id];novos.add(id);n++}catch(e){ferr(e.message);break}}
+  if($('#tlist')){read();draw()}if(n)toast(n==1?'Foto adicionada':n+' fotos adicionadas')};
+ window.fotoDel=(i,j)=>{read();items[i].fotos=items[i].fotos.filter((_,k)=>k!==j);draw()};
+ const fotosFim=keep=>{const k=new Set(keep);for(const id of [...orig,...novos])if(!k.has(id))delFoto(id)};
  $('#tadd').onclick=()=>{read();items.push({desc:'',estilo:'',cm:0,cart:0,valor:0});draw(items.length-1)};
  draw();
  const all=()=>JSON.stringify([read(),...['s_cid','s_data','s_status','s_hora','s_fim','s_material','s_obs'].map(k=>$('#'+k).value),$('#s_pago').checked]),s0=all();
- window.bk=()=>all()===s0?closeM():(confirm('Descartar as alterações desta sessão?')&&closeM());
+ window.bk=()=>{if(all()!==s0&&!confirm('Descartar as alterações desta sessão?'))return;for(const id of novos)delFoto(id);closeM()};
  $('#sv').onclick=()=>{badD=0;const t=read().filter(x=>x.desc||x.estilo||x.cm||x.cart||x.valor);
   const o={cid:$('#s_cid').value,data:toISO($('#s_data').value),hora:toT($('#s_hora').value),fim:toT($('#s_fim').value),status:$('#s_status').value,material:parseFloat($('#s_material').value)||0,pago:$('#s_pago').checked,obs:$('#s_obs').value.trim()};
   if(badD)return ferr('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');
@@ -503,13 +548,28 @@ function sessForm(title,s,ok,del){s=s||{};let items=tats(s).map(t=>({...t}));
   const sem=t.findIndex(x=>!x.desc);if(sem>=0){const k=items.indexOf(t[sem]);$('#t_desc_'+k).focus();return ferr('Descreva a tatuagem '+(k+1)+'.')}
   // campos resumidos na sessão (compatibilidade com backup e telas antigas)
   Object.assign(o,{tatuagens:t,valor:t.reduce((a,x)=>a+x.valor,0),desc:t.map(x=>x.desc).join(' + '),estilo:t[0].estilo,cm:t.reduce((a,x)=>a+x.cm,0),cart:t.reduce((a,x)=>a+x.cart,0)});
-  ok(o);save();closeM();render()};
- if(del)$('#dl').onclick=()=>{if(confirm('Excluir esta sessão e todas as tatuagens dela? Não dá para desfazer.')){del();save();closeM();render();toast('Sessão excluída')}}}
+  fotosFim(t.flatMap(x=>x.fotos));ok(o);save();closeM();render()};
+ if(del)$('#dl').onclick=()=>{if(confirm('Excluir esta sessão e todas as tatuagens dela'+(orig.size||novos.size?', incluindo as fotos':'')+'? Não dá para desfazer.')){fotosFim([]);del();save();closeM();render();toast('Sessão excluída')}}}
+/* ---- Fotos do resultado ---- */
+// Reduz para no máximo 1600 px e regrava em JPEG: fica leve e perde GPS e outros metadados da câmera.
+async function shrink(file){if(!/^image\//.test(file.type||'image/'))throw new Error('Escolha um arquivo de imagem.');
+ const url=URL.createObjectURL(file);
+ try{const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error('Não foi possível abrir esta imagem. Tente outra foto.'));i.src=url});
+  const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*k)),h=Math.max(1,Math.round(img.naturalHeight*k));
+  const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);
+  for(const q of [.82,.7,.55]){const b=await new Promise(r=>c.toBlob(r,'image/jpeg',q));if(b&&b.size<=1400*1024)return b}
+  throw new Error('Foto grande demais.')}finally{URL.revokeObjectURL(url)}}
+async function upFoto(blob){let r;try{r=await fetch('/api/photo',{method:'PUT',headers:{'Content-Type':'image/jpeg'},body:blob,credentials:'same-origin'})}catch(e){throw new Error('Sem conexão: a foto não foi enviada.')}
+ const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.id)throw new Error((j&&j.error)||'Não foi possível enviar a foto (erro '+r.status+').');return j.id}
+const delFoto=id=>fetch('/api/photo?id='+encodeURIComponent(id),{method:'DELETE',credentials:'same-origin'}).catch(()=>{});
+function fotoVer(id){let lb=$('#lb');if(!lb){lb=document.createElement('div');lb.id='lb';lb.setAttribute('role','dialog');lb.setAttribute('aria-modal','true');lb.setAttribute('aria-label','Foto do resultado');lb.onclick=()=>lb.remove();document.body.appendChild(lb)}
+ lb.innerHTML=`<img src="/api/photo?id=${encodeURIComponent(id)}" alt="Foto do resultado"><button class="ib" aria-label="Fechar foto">${ic('x')}</button>`;lb.querySelector('.ib').focus()}
+const nFotos=s=>tats(s).reduce((a,t)=>a+(Array.isArray(t.fotos)?t.fotos.length:0),0);
 const persF=[{k:'desc',l:'Descrição',r:1},{k:'cat',l:'Categoria',t:'sel',o:['Moradia','Alimentação','Transporte','Estúdio / aluguel','Impostos','Lazer','Outros'],w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'valor',l:'Valor (R$)',t:'number',w:1,r:1}];
 const stockF=[{k:'nome',l:'Material',r:1},{k:'qtd',l:'Quantidade',t:'number',w:1},{k:'compra',l:'Dia da compra',t:'date',d:today(),w:1,r:1},{k:'fim',l:'Dia que acabou',t:'date',w:1}];
 const addC=()=>form('Novo cliente',clientF,{},o=>{const id=uid();db.clients.push({id,...o});setTimeout(()=>{if(confirm('Cliente cadastrado! Marcar a primeira sessão agora? A ficha de anamnese é enviada por sessão.'))addS(id)},150)});
 const edC=id=>{const c=db.clients.find(x=>x.id===id);form('Cliente',clientF,c,o=>Object.assign(c,o),()=>db.clients=db.clients.filter(x=>x.id!==id))};
-const addS=cid=>db.clients.length?sessForm('Nova sessão',cid?{cid}:{},o=>{const id=uid();db.sessions.push({id,...o});setTimeout(()=>posS(id),150)}):(toast('Cadastre um cliente antes de marcar a sessão.'),go('cli'),addC());
+const addS=(cid,data)=>db.clients.length?sessForm('Nova sessão',Object.assign({},cid?{cid}:{},data?{data}:{}),o=>{const id=uid();db.sessions.push({id,...o});setTimeout(()=>posS(id),150)}):(toast('Cadastre um cliente antes de marcar a sessão.'),go('cli'),addC());
 const edS=id=>{const s=db.sessions.find(x=>x.id===id);sessForm('Sessão',s,o=>Object.assign(s,o),()=>db.sessions=db.sessions.filter(x=>x.id!==id))};
 const addP=()=>form('Novo custo pessoal',persF,{},o=>db.personal.push({id:uid(),...o}));
 const edP=id=>{const s=db.personal.find(x=>x.id===id);form('Custo pessoal',persF,s,o=>Object.assign(s,o),()=>db.personal=db.personal.filter(x=>x.id!==id))};
@@ -553,7 +613,7 @@ function sessRow(s,full){const ts=tats(s),one=ts.length===1,val=ts.reduce((a,t)=
  ${full&&!one?`<ul class="r-items">${ts.map(t=>`<li><span>${esc(t.desc)}${tatTxt(t)?`, ${esc(tatTxt(t))}`:''}</span><span>${R(t.valor)}</span></li>`).join('')}</ul>`:''}
 </div>
  <div class="r-end">${full?`<span class="money">${R(val)}</span>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span>${full?`<small>${s.pago?'Pago':'A receber'}${s.material?', material '+R(s.material):''}</small>`:''}</div>
- ${live(s)?(st=>`<div class="r-fx"><span class="bd ${st[1]}">${st[0]}</span><button class="btn s sm" onclick="event.stopPropagation();fichaS('${s.id}')">${ic('doc')}Ficha</button><button class="btn s sm" onclick="event.stopPropagation();gcal('${s.id}')" aria-label="Adicionar ao Google Agenda" title="Adicionar ao Google Agenda">${ic('cal')}Agenda</button></div>`)(fSt(s.id)):''}</div>`}
+ ${live(s)?(st=>`<div class="r-fx"><span class="bd ${st[1]}">${st[0]}</span><button class="btn s sm" onclick="event.stopPropagation();fichaS('${s.id}')">${ic('doc')}Ficha</button><button class="btn s sm" onclick="event.stopPropagation();gcal('${s.id}')" aria-label="Adicionar ao Google Agenda" title="Adicionar ao Google Agenda">${ic('cal')}Agenda</button>${nFotos(s)?`<span class="fcnt" title="Fotos do resultado">${ic('cam')}${nFotos(s)}</span>`:''}</div>`)(fSt(s.id)):''}</div>`}
 const dur=s=>{if(!s.hora||!s.fim)return'';const a=s.hora.split(':'),b=s.fim.split(':');let m=(b[0]*60+ +b[1])-(a[0]*60+ +a[1]);if(m<0)m+=1440;return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
 const sortS=l=>l.slice().sort((a,b)=>(a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
 /* ---- Início ---- */
@@ -673,10 +733,25 @@ async function usarDados(id){const f=FL().find(x=>x.id===id)||{};try{const r=awa
  if(!confirm(`Atualizar o cadastro com os dados da ficha?\n\nNome: ${a.nome}\nCPF: ${cpf}\nNascimento: ${String(a.nasc).split('-').reverse().join('/')}${a.tel?'\nTelefone: '+a.tel:''}${a.email?'\nE-mail: '+a.email:''}`))return;
  Object.assign(c,{nome:a.nome,doc:cpf,nasc:a.nasc},a.tel?{tel:a.tel}:{},a.email?{email:a.email}:{});save();render();voltaF(f);toast('Cadastro atualizado com os dados da ficha')}catch(e){ferr(e.message)}}
 /* ---- Tatuagens (sessões do mês) ---- */
+/* ---- Visualização em lista ou calendário do mês (a escolha fica salva neste aparelho) ---- */
+let view=(()=>{try{return localStorage.getItem('hi_view')==='cal'?'cal':'lista'}catch(e){return'lista'}})(),calSel='';
+function setView(v){view=v;try{localStorage.setItem('hi_view',v)}catch(e){}render()}
+const viewSeg=()=>`<div class="seg" role="group" aria-label="Visualização">${[['lista','Lista'],['cal','Calendário']].map(([k,l])=>`<button class="${view===k?'on':''}" aria-pressed="${view===k}" onclick="setView('${k}')">${l}</button>`).join('')}</div>`;
+function calV(l){const[y,m]=per.split('-').map(Number),first=new Date(y,m-1,1).getDay(),dim=new Date(y,m,0).getDate(),t=today();
+ if(!calSel||calSel.slice(0,7)!==per)calSel=t.slice(0,7)===per?t:'';
+ const by={};for(const s of l)(by[s.data]=by[s.data]||[]).push(s);
+ let cells='';for(let i=0;i<first;i++)cells+='<div class="cd out" aria-hidden="true"></div>';
+ for(let d=1;d<=dim;d++){const iso=per+'-'+String(d).padStart(2,'0'),ss=sortS(by[iso]||[]),n=ss.length;
+  cells+=`<button class="cd${iso===t?' hoje':''}${iso===calSel?' sel':''}" onclick="calSel='${iso}';render()" aria-pressed="${iso===calSel}" aria-label="${d} de ${mLabel()}${n?', '+n+(n==1?' sessão':' sessões'):', sem sessões'}"><span class="cn">${d}</span>${ss.slice(0,3).map(s=>`<span class="ce ${stCls(s.status)}">${s.hora?esc(s.hora)+' ':''}${esc(cname(s.cid).split(' ')[0])}</span>`).join('')}${n>3?`<span class="cm">+${n-3}</span>`:''}${n?`<span class="cdots">${ss.slice(0,4).map(s=>`<i class="${stCls(s.status)}"></i>`).join('')}</span>`:''}</button>`}
+ for(let i=(first+dim)%7;i&&i<7;i++)cells+='<div class="cd out" aria-hidden="true"></div>';
+ const sel=calSel?sortS(by[calSel]||[]):[];
+ return`<div class="cal"><div class="cw" aria-hidden="true">${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(x=>`<span>${x}</span>`).join('')}</div><div class="cg">${cells}</div></div>`+
+ (calSel?`<div class="sec-h" style="margin:22px 0 10px"><h3>${dayLbl(calSel)}</h3><button class="lnk" onclick="addS('','${calSel}')">${ic('plus')}Nova sessão neste dia</button></div>${sel.length?`<div class="list">${sel.map(s=>sessRow(s,1)).join('')}</div>`:'<p class="sub">Nenhuma sessão neste dia.</p>'}`
+  :'<p class="sub" style="margin-top:14px">Toque em um dia para ver as sessões dele.</p>')}
 function vSes(){const l=sortS(db.sessions.filter(s=>inP(s.data)&&temEst(s))).reverse(),a=l.filter(live),f=vT(a),m=sumS(a,'material'),n=nT(a);
- return ph('Tatuagens','Sessões do mês com valores, materiais e lucro.',monthIn()+estSel())+
+ return ph('Tatuagens','Sessões do mês com valores, materiais e lucro.',monthIn()+estSel()+viewSeg())+
  ledger([['Faturado',R(f),`${n} ${n==1?'tatuagem':'tatuagens'}${est?' de '+esc(est):''}`],['Materiais',R(m)],['Lucro',R(f-m),'',f-m<0?'neg':''],['A receber',R(vT(a.filter(s=>!s.pago)))]])+
- `<div class="sec">${l.length?`<div class="list">${byDay(l,s=>sessRow(s,1))}</div>`:empty(est?`Nenhuma tatuagem de ${esc(est)} em ${mLabel()}`:`Nenhuma sessão em ${mLabel()}`,'Marque uma sessão ou escolha outro mês.',`<button class="btn" onclick="addS()">${ic('plus')}Nova sessão</button>`)}</div>`+fab('Nova sessão','addS()')}
+ `<div class="sec">${view==='cal'?calV(l):l.length?`<div class="list">${byDay(l,s=>sessRow(s,1))}</div>`:empty(est?`Nenhuma tatuagem de ${esc(est)} em ${mLabel()}`:`Nenhuma sessão em ${mLabel()}`,'Marque uma sessão ou escolha outro mês.',`<button class="btn" onclick="addS()">${ic('plus')}Nova sessão</button>`)}</div>`+fab('Nova sessão',view==='cal'&&calSel?`addS('','${calSel}')`:'addS()')}
 /* ---- Custos pessoais ---- */
 function vPes(){const l=db.personal.filter(p=>inP(p.data)).sort((a,b)=>b.data.localeCompare(a.data)),t=sumS(l,'valor');
  return ph('Custos pessoais','Contas e gastos fora das tatuagens. Entram no saldo geral do Início.',monthIn())+

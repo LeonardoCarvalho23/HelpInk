@@ -39,6 +39,7 @@ migrations/0001_init.sql   tabela de dados (records)
 migrations/0002_users.sql  tabela de contas (users)
 migrations/0003_forms.sql  fichas de anamnese assinadas (forms)
 migrations/0004_sessao_agenda.sql  ficha por sessão e link da agenda do cliente
+migrations/0005_fotos.sql  registro das fotos do resultado (arquivos no R2)
 public/assinar/agenda/     página pública da agenda do cliente
 public/index.html          página inicial pública (funcionalidades + botão Entrar)
 public/app/index.html      o app (exige login)
@@ -156,6 +157,21 @@ O arquivo `.ots` pode ser conferido em <https://opentimestamps.org> junto com o 
 **HelpInk - ficha publica (bypass)** (**Bypass → Everyone**). Ela deixa `/assinar/...` sem login
 mesmo se um dia outra regra passar a proteger o domínio inteiro. `/app/` e `/api/` continuam
 pedindo login, e a API do app ainda confere o token do Access no próprio Worker.
+
+## Calendário e fotos do resultado
+
+- Na tela **Tatuagens**, o botão **Lista / Calendário** alterna entre a lista do mês e um
+  calendário (a escolha fica salva em cada aparelho). Tocar em um dia mostra as sessões dele e
+  permite marcar uma nova sessão naquele dia.
+- Cada tatuagem da sessão aceita até 10 **fotos do resultado**. O app reduz a foto para no
+  máximo 1600 px e regrava em JPEG antes de enviar (isso também apaga GPS e outros dados da
+  câmera). Os arquivos ficam no **R2** (bucket `helpink-fotos`, binding `FOTOS`); a tabela
+  `photos` (migração `0005_fotos.sql`) guarda de quem é cada foto e o tamanho.
+- Limites: 1,5 MB por foto, 1.500 fotos por conta e teto geral de 9 GB, para o R2 ficar sempre
+  dentro da faixa gratuita (10 GB). Cada conta só vê as próprias fotos (a chave no R2 começa
+  pelo SHA-256 do e-mail). Fotos removidas são apagadas do R2 ao salvar a sessão; ao excluir a
+  sessão, as fotos dela também são apagadas. O backup do app guarda só a referência das fotos,
+  não os arquivos.
 
 ## Agenda do cliente e Google Agenda
 
