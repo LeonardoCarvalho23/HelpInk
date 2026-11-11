@@ -58,7 +58,7 @@ Tudo pode ser feito pelo painel da Cloudflare (<https://dash.cloudflare.com>), s
 1. Faça commit e push destas alterações.
 2. **Workers & Pages → Create → Import a repository**, conecte o GitHub e escolha o repositório `HelpInk`.
 3. Mantenha o comando de deploy `npx wrangler deploy` e clique em **Deploy**.
-4. O site fica em `https://helpink.<sua-conta>.workers.dev`. A partir daqui, cada push na `main` publica de novo.
+4. A partir daqui, cada push na `main` publica de novo (endereço final no passo 4).
 
 Nesse momento o site abre, mas mostra "Não autorizado" — falta ligar o login.
 
@@ -82,10 +82,18 @@ O Worker não confia só na tela de login: em toda chamada à API ele confere a 
 token do Access, a equipe, o AUD e a validade. Se alguém chegar ao site por outro endereço
 sem passar pelo Access, a API recusa.
 
-Se depois você usar um domínio próprio (ex.: `app.seuestudio.com.br`) com outra aplicação
-do Access, adicione o AUD dela em `ACCESS_AUD`, separado por vírgula.
+### 4. Domínio próprio
 
-Dica: em **Settings → Domains & Routes**, desative **Preview URLs** se não for usá-las.
+O HelpInk roda em **<https://helpink.app.br>** (domínio do registro.br com os servidores DNS
+apontando para a Cloudflare). Em `wrangler.jsonc`:
+
+- `routes` liga o Worker ao domínio (`custom_domain: true`);
+- `workers_dev: false` e `preview_urls: false` desligam os endereços `*.workers.dev`,
+  para o app existir em um único endereço.
+
+A proteção do Access feita no passo 3 (no próprio Worker) já cobre o domínio, com o mesmo AUD.
+Se um dia você criar outra aplicação do Access que emita login para o app, adicione o AUD dela em
+`ACCESS_AUD`, separado por vírgula.
 
 ### Sair
 
@@ -120,8 +128,11 @@ O arquivo `.ots` pode ser conferido em <https://opentimestamps.org> junto com o 
 (a confirmação na blockchain leva algumas horas após a assinatura).
 
 **Configuração no Access:** as rotas públicas precisam ficar fora do login. Em
-**Zero Trust → Access controls → Applications**, crie uma aplicação *Self-hosted* com destino
-`<domínio>/assinar` e uma política **Bypass → Everyone**.
+**Zero Trust → Access controls → Applications** existe a aplicação *Self-hosted*
+`helpink.app.br` com destino `helpink.app.br/assinar` e a política
+**HelpInk - ficha publica (bypass)** (**Bypass → Everyone**). Ela libera só `/assinar/...`;
+`/`, `/api/...` e qualquer outro caminho continuam pedindo login, e a API do app ainda confere
+o token do Access no próprio Worker.
 
 O texto do termo fica em `src/worker.js` (`buildTerm`). Peça a um advogado para revisá-lo;
 ao mudar o texto, altere também `TERM_VERSION`. Cada ficha guarda a versão do termo que foi assinada.
