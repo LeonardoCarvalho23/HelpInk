@@ -288,7 +288,7 @@ const ROLE='role="button" tabindex="0"';
 // Diálogo padrão: cabeçalho com fechar, corpo rolável e rodapé fixo (no celular vira folha que sobe de baixo)
 function dlg(title,body,foot,bk){
  $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)bk()"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT"><div class="dlg-h"><h2 id="dlgT">${title}</h2><button class="ib" onclick="bk()" aria-label="Fechar">${ic('x')}</button></div><div class="dlg-b">${body}</div>${foot!=null?`<div class="dlg-f"><p class="ferr" id="ferr" role="alert"></p>${foot}</div>`:''}</div></div>`;
- window.bk=bk||closeM;setTimeout(()=>{const f=$('#mod .dlg-b input:not([readonly]),#mod .dlg-b select,#mod .dlg-b textarea')||$('#mod .dlg .ib');if(f&&matchMedia('(min-width:641px)').matches)f.focus()},40)}
+ window.bk=bk||closeM;if(!hModal)hPush();setTimeout(()=>{const f=$('#mod .dlg-b input:not([readonly]),#mod .dlg-b select,#mod .dlg-b textarea')||$('#mod .dlg .ib');if(f&&matchMedia('(min-width:641px)').matches)f.focus()},40)}
 const ferr=m=>{const e=$('#ferr');if(e){e.textContent=m;e.scrollIntoView({block:'nearest'})}else alert(m)};
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;clearTimeout(toastT);toastT=setTimeout(()=>t.textContent='',3200)}
 document.addEventListener('keydown',e=>{
@@ -435,7 +435,19 @@ function form(title,fields,v,ok,del){v=v||{};
  const snap=()=>fields.map(f=>f.t==='note'?'':(f.t==='ck'?$('#f_'+f.k).checked:$('#f_'+f.k).value)).join('|'),s0=snap();
  window.bk=()=>snap()===s0?closeM():(confirm('Descartar as alterações?')&&closeM());
  if(del)$('#dl').onclick=()=>{if(confirm('Excluir este registro? Não dá para desfazer.')){del();save();closeM();render();toast('Registro excluído')}}}
-const closeM=()=>$('#mod').innerHTML='';
+/* ---- Botão voltar (celular e navegador) ----
+   Cada tela é um passo no histórico (endereço /app/#tela) e cada janela aberta também:
+   "voltar" fecha a janela (com a mesma confirmação do Cancelar) ou volta para a tela anterior.
+   hModal: há um passo no histórico para a janela aberta. hSkip: voltas que nós mesmos pedimos
+   (ao fechar uma janela pelo botão) e que o evento popstate deve ignorar. */
+let hModal=false,hSkip=0,hWant=false;
+function hPush(){if(hSkip){hWant=true;return}history.pushState({tab,m:1},'');hModal=true}
+function closeM(){$('#mod').innerHTML='';hWant=false;if(hModal){hModal=false;hSkip++;history.back()}}
+function showTab(t){tab=t;q='';render();window.scrollTo(0,0);if(t==='usr')loadUsers();if(FT.includes(t))loadFichas()}
+addEventListener('popstate',e=>{
+ if(hSkip){hSkip--;if(!hSkip&&hWant){hWant=false;if($('#mod').innerHTML)hPush()}return}
+ if($('#mod').innerHTML){hModal=false;(window.bk||closeM)();if($('#mod').innerHTML&&!hModal)hPush();return}
+ const t=e.state&&e.state.tab;if(t&&V[t]&&t!==tab)showTab(t)});
 /* ---- Dados auxiliares ---- */
 const cname=id=>(db.clients.find(c=>c.id===id)||{}).nome||'—';
 const inP=d=>(d||'').slice(0,7)===per;
@@ -508,7 +520,10 @@ const use=id=>{const s=db.stock.find(x=>x.id===id);form('Baixa: '+esc(s.nome),[{
 /* ---- Telas ---- */
 const NAVG=()=>[['Estúdio',[['dash','home','Início'],['cli','users','Clientes'],['ses','needle','Tatuagens']]],['Gestão',[['pes','wallet','Custos pessoais'],['est','box','Estoque']]],['Conta',[...(user&&user.admin?[['usr','key','Usuários']]:[]),['bkp','sliders','Conta e backup']]]];
 const TABS=[['dash','home','Início'],['cli','users','Clientes'],['ses','needle','Tatuagens']];
-function go(t){tab=t;q='';closeM();render();window.scrollTo(0,0);if(t==='usr')loadUsers();if(FT.includes(t))loadFichas()}
+function go(t){const m=hModal;$('#mod').innerHTML='';hModal=false;hWant=false;
+ // Se havia uma janela aberta, o passo dela vira o passo da nova tela (assim "voltar" não reabre a janela)
+ if(m)history.replaceState({tab:t},'','#'+t);else if(t!==tab)history.pushState({tab:t},'','#'+t);
+ showTab(t)}
 const pendN=()=>Array.isArray(usrs)?usrs.filter(u=>u.status==='pending').length:0;
 const cntB=k=>k==='usr'&&pendN()?`<span class="cnt" aria-label="${pendN()} pedidos aguardando">${pendN()}</span>`:'';
 function navH(){const more=!TABS.some(t=>t[0]===tab),cur=k=>tab===k?'aria-current="page"':'';
@@ -758,7 +773,9 @@ async function start(){snap=null;screen('<p class="sub">Carregando seus dados…
   if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=sanitize(L);delete db.dropped;await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pelo aviso "Não foi possível salvar".');else clearLegacy()}}
  }catch(e){return failV(e)}
  applyLook();if(!db.named&&me.user&&me.user.estudio){db.studio=me.user.estudio;db.named=1;save()}
- $('#auth').style.display='none';$('#app').style.display='';tab='dash';render();showSync();
+ $('#auth').style.display='none';$('#app').style.display='';
+ const h0=location.hash.slice(1);tab=V[h0]&&(h0!=='usr'||user.admin)?h0:'dash'; // recarregar mantém a tela
+ history.replaceState({tab},'',tab==='dash'?location.pathname:'#'+tab);render();showSync();
  if(user.admin)loadUsers();loadFichas();
  if(!db.named&&(!db.studio||db.studio==='Meu Estúdio'))askName()}
 async function sair(){await queue;if(syncErr&&!syncErr.auth&&!confirm('Algumas alterações não foram salvas e serão perdidas. Sair mesmo assim?'))return;
