@@ -74,13 +74,28 @@ Nesse momento o site abre, mas mostra "Não autorizado" — falta ligar o login.
    (código por e-mail), para que qualquer pessoa consiga entrar com o próprio e-mail.
 3. Em **Zero Trust → Access controls → Policies**, crie uma política **Allow** com
    **Include → Everyone**. Quem libera o uso de verdade é a aprovação dentro do app.
-4. No Worker: aba **Access → Protect this Worker behind Access**, escopo **All traffic**,
-   e escolha a política do passo 3. A tela mostra o **AUD tag** e o endereço da equipe (JWKS).
+4. Em **Access controls → Applications → Create new application → Self-hosted**, crie a
+   aplicação do app com dois destinos, `<domínio>/app` e `<domínio>/api`, e a política do
+   passo 3. Só esses caminhos pedem login: a página inicial (`/`) é pública.
 5. Em `wrangler.jsonc`, preencha:
    - `ACCESS_TEAM_DOMAIN`: `https://<sua-equipe>.cloudflareaccess.com`
-   - `ACCESS_AUD`: o AUD tag do passo 4
+   - `ACCESS_AUD`: o AUD da aplicação do passo 4 (aparece como `kid=` no endereço da tela de
+     login, ou na aba **Access** do Worker em "Application values")
 6. Crie o segredo `ADMIN_EMAILS` com o seu e-mail (veja "Contas e aprovação").
-7. Commit e push. Pronto: ao abrir o site, aparece a tela de login da Cloudflare.
+7. Commit e push. Pronto: o botão **Entrar** da página inicial leva à tela de login da Cloudflare.
+
+Na aba **Access** do Worker, a proteção do Worker inteiro fica em **Previews only**: ela só cobre
+as URLs de pré-visualização (desligadas), e o domínio principal segue as aplicações acima.
+O próprio Cloudflare aplica a regra mais específica: primeiro as aplicações por caminho
+(`/app`, `/api`, `/assinar`), depois a do Worker.
+
+Situação atual:
+
+| Caminho | Acesso |
+|---|---|
+| `/` (página inicial) | público |
+| `/app/` e `/api/` | login (aplicação `helpink.app.br`, política "qualquer pessoa" + aprovação no app) |
+| `/assinar/` (ficha e agenda do cliente) | público, só com o link pessoal (política de Bypass) |
 
 O Worker não confia só na tela de login: em toda chamada à API ele confere a assinatura do
 token do Access, a equipe, o AUD e a validade. Se alguém chegar ao site por outro endereço
@@ -95,9 +110,9 @@ apontando para a Cloudflare). Em `wrangler.jsonc`:
 - `workers_dev: false` e `preview_urls: false` desligam os endereços `*.workers.dev`,
   para o app existir em um único endereço.
 
-A proteção do Access feita no passo 3 (no próprio Worker) já cobre o domínio, com o mesmo AUD.
 Se um dia você criar outra aplicação do Access que emita login para o app, adicione o AUD dela em
-`ACCESS_AUD`, separado por vírgula.
+`ACCESS_AUD`, separado por vírgula. Hoje ele lista o AUD da aplicação de `/app` e `/api` e o da
+proteção antiga do Worker.
 
 ### Sair
 
@@ -138,9 +153,9 @@ O arquivo `.ots` pode ser conferido em <https://opentimestamps.org> junto com o 
 **Configuração no Access:** as rotas públicas precisam ficar fora do login. Em
 **Zero Trust → Access controls → Applications** existe a aplicação *Self-hosted*
 `helpink.app.br` com destino `helpink.app.br/assinar` e a política
-**HelpInk - ficha publica (bypass)** (**Bypass → Everyone**). Ela libera só `/assinar/...`;
-`/`, `/api/...` e qualquer outro caminho continuam pedindo login, e a API do app ainda confere
-o token do Access no próprio Worker.
+**HelpInk - ficha publica (bypass)** (**Bypass → Everyone**). Ela deixa `/assinar/...` sem login
+mesmo se um dia outra regra passar a proteger o domínio inteiro. `/app/` e `/api/` continuam
+pedindo login, e a API do app ainda confere o token do Access no próprio Worker.
 
 ## Agenda do cliente e Google Agenda
 
