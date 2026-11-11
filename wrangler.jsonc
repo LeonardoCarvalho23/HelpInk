@@ -14,10 +14,10 @@
   ],
   "vars": {
     // Zero Trust → Settings → Custom Pages/Team domain. Ex.: https://minhaequipe.cloudflareaccess.com
-    "ACCESS_TEAM_DOMAIN": "https://SUA-EQUIPE.cloudflareaccess.com",
+    "ACCESS_TEAM_DOMAIN": "https://broken-haze-2b33.cloudflareaccess.com",
     // Zero Trust → Access → Applications → (app) → Application Audience (AUD) Tag.
     // Se tiver mais de uma aplicação (ex.: workers.dev e domínio próprio), separe por vírgula.
-    "ACCESS_AUD": "COLE-AQUI-O-AUD"
+    "ACCESS_AUD": "a8c92075c123d0c74d443e82ed42ad068c2d95ab75db6786ede5d5834d1c6cea"
   },
   "observability": { "enabled": true }
 }
