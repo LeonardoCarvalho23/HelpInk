@@ -151,12 +151,11 @@ const sumS=(l,k)=>l.reduce((a,s)=>a+(+s[k]||0),0);
 const stCls=s=>s==='Confirmado'||s==='Concluído'?'':s==='Cancelado'?'x':'p';
 const TERMO='Termo: declaro que fui informado(a) sobre os procedimentos, cuidados e riscos da tatuagem (infecção, alergia, cicatrização), que as informações de saúde são verdadeiras e que autorizo a realização do trabalho.';
 /* ---- Formulários ---- */
-const clientF=[{k:'nome',l:'Nome completo',r:1},{k:'tel',l:'Telefone / WhatsApp',t:'tel',w:1},{k:'nasc',l:'Nascimento',t:'date',w:1},{k:'email',l:'E-mail',t:'email'},{k:'doc',l:'CPF / RG',w:1},{k:'saude',l:'Anamnese: alergias, medicamentos, doenças',t:'ta'},{k:'obs',l:'Observações',t:'ta'},{t:'note',l:TERMO},{k:'aceite',l:'Cliente leu e aceitou o termo'},{k:'aceiteNome',l:'Nome de quem aceitou',w:1},{k:'aceiteData',l:'Data do aceite',t:'date',w:1}];
-clientF[8].t='ck';
+const clientF=[{k:'nome',l:'Nome completo',r:1},{k:'tel',l:'Telefone / WhatsApp',t:'tel',w:1},{k:'nasc',l:'Nascimento',t:'date',w:1},{k:'email',l:'E-mail',t:'email'},{k:'doc',l:'CPF / RG',w:1},{k:'saude',l:'Anotações internas de saúde',t:'ta'},{k:'obs',l:'Observações',t:'ta'},{t:'note',l:'📝 A ficha de anamnese e o termo de consentimento são preenchidos e assinados pelo próprio cliente, pelo link enviado no botão "Ficha" da lista de clientes.'}];
 const sessF=()=>[{k:'cid',l:'Cliente',t:'sel',o:[['','Selecione…'],...db.clients.map(c=>[c.id,c.nome])],r:1},{k:'desc',l:'Tatuagem / serviço',r:1},{k:'estilo',l:'Estilo da tatuagem',t:'sel',o:[['','Selecione…'],'Realismo','Blackwork','Fineline','Old School (Tradicional)','Neotradicional','Aquarela','Geométrico','Pontilhismo (Dotwork)','Oriental / Irezumi','Tribal','Maori','Lettering','Minimalista','Biomecânico','Surrealismo','Trash Polka','Cobertura (Cover-up)','Retoque','Outro']},{k:'cm',l:'Tamanho (cm)',t:'number',w:1},{k:'cart',l:'Cartuchos utilizados',t:'number',w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'hora',l:'Início',t:'time',w:1},{k:'fim',l:'Término',t:'time',w:1},{k:'status',l:'Status',t:'sel',o:['Pendente','Confirmado','Concluído','Cancelado'],w:1},{k:'valor',l:'Valor cobrado (R$)',t:'number',w:1},{k:'material',l:'Custo dos materiais (R$)',t:'number',w:1},{k:'pago',l:'Pagamento recebido'},{k:'obs',l:'Observações',t:'ta'}];
 const persF=[{k:'desc',l:'Descrição',r:1},{k:'cat',l:'Categoria',t:'sel',o:['Moradia','Alimentação','Transporte','Estúdio / aluguel','Impostos','Lazer','Outros'],w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'valor',l:'Valor (R$)',t:'number',w:1,r:1}];
 const stockF=[{k:'nome',l:'Material',r:1},{k:'qtd',l:'Quantidade',t:'number',w:1},{k:'compra',l:'Dia da compra',t:'date',d:today(),w:1,r:1},{k:'fim',l:'Dia que acabou',t:'date',w:1}];
-const addC=()=>form('Novo cliente',clientF,{},o=>db.clients.push({id:uid(),...o}));
+const addC=()=>form('Novo cliente',clientF,{},o=>{const id=uid();db.clients.push({id,...o});setTimeout(()=>{if(confirm('Cliente cadastrado! Enviar agora a ficha de anamnese para ele preencher e assinar?'))novaFicha(id)},150)});
 const edC=id=>{const c=db.clients.find(x=>x.id===id);form('Cliente',clientF,c,o=>Object.assign(c,o),()=>db.clients=db.clients.filter(x=>x.id!==id))};
 const addS=()=>db.clients.length?form('Nova sessão',sessF(),{},o=>db.sessions.push({id:uid(),...o})):(alert('Cadastre um cliente primeiro.'),go('cli'));
 const edS=id=>{const s=db.sessions.find(x=>x.id===id);form('Sessão',sessF(),s,o=>Object.assign(s,o),()=>db.sessions=db.sessions.filter(x=>x.id!==id))};
@@ -168,7 +167,7 @@ const buy=id=>{const s=db.stock.find(x=>x.id===id);form('Compra: '+esc(s.nome),[
 const use=id=>{const s=db.stock.find(x=>x.id===id);form('Baixa: '+esc(s.nome),[{k:'qtd',l:'Quantidade usada',t:'number',r:1}],{},o=>s.qtd=Math.max(0,(+s.qtd||0)-o.qtd))};
 /* ---- Telas ---- */
 const NAV=[['dash','📊','Dashboard'],['cli','👥','Clientes'],['ses','🎨','Tatuagens'],['pes','💳','Pessoal'],['est','📦','Estoque'],['bkp','⚙️','Conta']];
-function go(t){tab=t;q='';render();window.scrollTo(0,0);if(t==='usr')loadUsers()}
+function go(t){tab=t;q='';render();window.scrollTo(0,0);if(t==='usr')loadUsers();if(t==='cli')loadFichas()}
 const pendN=()=>Array.isArray(usrs)?usrs.filter(u=>u.status==='pending').length:0;
 const navL=()=>user&&user.admin?[...NAV.slice(0,5),['usr','🔑','Usuários'+(pendN()?' ('+pendN()+')':'')],NAV[5]]:NAV;
 const navH=()=>`<div class="logo"><b>H</b><span>HelpInk</span></div>`+navL().map(n=>`<button class="${tab===n[0]?'on':''}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join('');
@@ -204,9 +203,56 @@ function vDash(){const h=new Date().getHours(),g=h<12?'Bom dia':h<18?'Boa tarde'
  <div class="card"><div class="bar" style="justify-content:space-between;margin:0"><h2>Agenda do período</h2><a href="#" style="color:var(--gt);text-decoration:none" onclick="go('ses');return false">Ver tudo ›</a></div>
  ${ag.map(s=>sessRow(s)).join('')||'<div class="empty">Nenhuma sessão futura neste período.</div>'}</div>`}
 function vCli(){const l=db.clients.filter(c=>(c.nome+c.tel).toLowerCase().includes(q.toLowerCase()));
- return`<header><div><h1>Clientes</h1><div class="sub">Dados, anamnese e aceite do termo</div></div></header>
+ return`<header><div><h1>Clientes</h1><div class="sub">Dados, ficha de anamnese e termo assinados pelo cliente</div></div></header>
  <div class="bar"><input placeholder="Buscar cliente…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addC()">+ Novo cliente</button></div>
- ${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s));return`<div class="row" style="cursor:pointer" onclick="edC('${c.id}')"><div class="m">${esc(c.nome)}<small>${esc(c.tel||'sem telefone')} · ${ss.length} sessões · ${R(sumS(ss,'valor'))}</small></div><span class="bd ${c.aceite?'':'p'}">${c.aceite?'Termo aceito'+(c.aceiteData?' em '+fd(c.aceiteData):''):'Termo pendente'}</span></div>`}).join('')||'<div class="empty">Nenhum cliente encontrado.</div>'}`}
+ ${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s)),fs=fichaSt(c);return`<div class="row" style="cursor:pointer" onclick="edC('${c.id}')"><div class="m">${esc(c.nome)}<small>${esc(c.tel||'sem telefone')} · ${ss.length} sessões · ${R(sumS(ss,'valor'))}</small></div><span class="bd ${fs[1]}">${fs[0]}</span><button class="btn s" onclick="event.stopPropagation();fichaM('${c.id}')">📝 Ficha</button></div>`}).join('')||'<div class="empty">Nenhum cliente encontrado.</div>'}`}
+/* ---- Ficha de anamnese (o cliente preenche e assina pelo link) ---- */
+let fichas=null;
+async function loadFichas(){try{fichas=(await api('/api/forms')).forms}catch(e){console.error(e);if(!fichas)fichas=[]}if(tab==='cli'&&$('#app').style.display!=='none')render()}
+const fichasDe=cid=>(Array.isArray(fichas)?fichas:[]).filter(f=>f.client_id===cid);
+const vence=f=>f.status==='pending'&&f.expires_at<new Date().toISOString();
+const dth=s=>s?esc(new Date(s).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})):'';
+function fichaSt(c){const l=fichasDe(c.id),s=l.find(f=>f.status==='signed'),p=l.find(f=>f.status==='pending'&&!vence(f));
+ if(s)return['Ficha assinada em '+dth(s.signed_at).slice(0,10),''];if(p)return[p.opened_at?'Ficha aberta pelo cliente':'Ficha enviada','p'];
+ if(c.aceite)return['Termo manual (antigo)','c'];return[fichas?'Sem ficha':'…','p']}
+function fichaM(cid){const c=db.clients.find(x=>x.id===cid);if(!c)return;const l=fichasDe(cid);
+ const st=f=>f.status==='signed'?['Assinada',''] :f.status==='cancelled'?['Cancelada','c']:vence(f)?['Link expirado','x']:f.opened_at?['Aberta pelo cliente','p']:['Aguardando cliente','p'];
+ $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)closeM()"><div><h2>Ficha de ${esc(c.nome)}</h2>
+ <div class="sub">O cliente recebe um link, preenche a anamnese e assina o termo. O documento assinado não pode ser alterado.</div>
+ <div class="bar" style="margin:16px 0 4px"><button class="btn" onclick="novaFicha('${cid}')">+ Enviar nova ficha</button><button class="btn s" onclick="closeM()">Fechar</button></div>
+ ${l.map(f=>{const s=st(f);return`<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Ficha ${esc(f.id.slice(0,6))}</b><span class="bd ${s[1]}">${s[0]}</span></div>
+  <small style="color:var(--mu);display:block;margin-top:4px">Enviada em ${dth(f.created_at)}${f.status==='pending'?' · válida até '+dth(f.expires_at):''}${f.opened_at?' · aberta em '+dth(f.opened_at):''}${f.signed_at?' · assinada em '+dth(f.signed_at):''}</small>
+  ${f.doc_hash?`<small style="color:var(--mu);display:block;word-break:break-all">SHA-256: ${esc(f.doc_hash)}</small>`:''}
+  <div class="acts" style="margin-top:8px;flex-wrap:wrap">${f.status==='signed'?`<button class="btn s" onclick="baixarFicha('${f.id}')">⬇ Documento</button>${f.has_ots?`<button class="btn s" onclick="baixarFicha('${f.id}',1)">⬇ Carimbo do tempo</button>`:''}<button class="btn s" onclick="usarDados('${f.id}','${cid}')">Usar dados no cadastro</button>`
+   :f.status==='pending'?`<button class="btn s" onclick="relink('${f.id}','${cid}')">🔗 Gerar novo link</button><button class="btn s d" onclick="cancelaFicha('${f.id}','${cid}')">Cancelar</button>`:''}</div></div>`}).join('')||'<div class="empty">Nenhuma ficha enviada ainda.</div>'}
+ </div></div>`}
+async function novaFicha(cid){await queue;if(syncErr){alert('Salve os dados primeiro: há alterações não salvas.');return}
+ try{const r=await api('/api/forms',{action:'create',client_id:cid});await loadFichas();linkM(cid,r)}catch(e){alert(e.message)}}
+async function relink(id,cid){if(!confirm('Gerar um novo link? O link anterior deixará de funcionar.'))return;
+ try{const r=await api('/api/forms',{action:'relink',id});await loadFichas();linkM(cid,r)}catch(e){alert(e.message)}}
+async function cancelaFicha(id,cid){if(!confirm('Cancelar esta ficha? O link deixará de funcionar.'))return;
+ try{await api('/api/forms',{action:'cancel',id});await loadFichas();fichaM(cid)}catch(e){alert(e.message)}}
+function linkM(cid,r){const c=db.clients.find(x=>x.id===cid)||{},link=location.origin+'/assinar/#'+r.token;
+ const msgW=`Olá${c.nome?', '+c.nome.split(' ')[0]:''}! Antes da sua sessão no ${db.studio}, preencha sua ficha de saúde e assine o termo de consentimento por este link (válido até ${new Date(r.expires_at).toLocaleDateString('pt-BR')}): ${link}`;
+ let tel=String(c.tel||'').replace(/\D/g,'');if(tel.length===10||tel.length===11)tel='55'+tel;
+ window._lk={link,msgW};
+ $('#mod').innerHTML=`<div class="modal"><div><h2>Link da ficha pronto ✅</h2>
+ <div class="sub">Envie este link para ${esc(c.nome||'o cliente')}. Ele é pessoal, vale até ${dth(r.expires_at)} e só aparece agora: se perder, gere um novo.</div>
+ <label>Link</label><input id="lk" readonly onfocus="this.select()" value="${esc(link)}">
+ <div class="bar" style="margin:16px 0 0">${tel?`<button class="btn" onclick="window.open('https://wa.me/${tel}?text='+encodeURIComponent(_lk.msgW),'_blank')">Enviar pelo WhatsApp</button>`:''}<button class="btn s" onclick="cpLink()">Copiar mensagem</button><button class="btn s" onclick="fichaM('${cid}')">Concluir</button></div>
+ ${tel?'':'<div class="note">Cadastre o telefone do cliente para enviar direto pelo WhatsApp.</div>'}</div></div>`}
+function cpLink(){const t=_lk.msgW;try{navigator.clipboard.writeText(t).then(()=>alert('Mensagem com o link copiada!'),()=>{$('#lk').select();document.execCommand('copy')})}catch(e){$('#lk').select();document.execCommand('copy')}}
+async function hashHex(s){const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));return[...d].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function baixarFicha(id,ots){try{const r=await api('/api/forms/doc?id='+encodeURIComponent(id));
+ const nome=((r.answers&&r.answers.nome)||'cliente').normalize('NFD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').toLowerCase();
+ const base='ficha-'+nome+'-'+r.signed_at.slice(0,10);let blob,fn;
+ if(ots){const b=atob(r.ots),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);blob=new Blob([u],{type:'application/octet-stream'});fn=base+'.html.ots'}
+ else{if(await hashHex(r.doc)!==r.doc_hash){alert('Atenção: o documento não confere com o código registrado na assinatura.');return}blob=new Blob([r.doc],{type:'text/html;charset=utf-8'});fn=base+'.html'}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove()}catch(e){alert(e.message)}}
+async function usarDados(id,cid){try{const r=await api('/api/forms/doc?id='+encodeURIComponent(id)),a=r.answers||{},c=db.clients.find(x=>x.id===cid);if(!c)return;
+ const cpf=String(a.cpf||'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+ if(!confirm(`Atualizar o cadastro com os dados da ficha?\n\nNome: ${a.nome}\nCPF: ${cpf}\nNascimento: ${String(a.nasc).split('-').reverse().join('/')}${a.tel?'\nTelefone: '+a.tel:''}${a.email?'\nE-mail: '+a.email:''}`))return;
+ Object.assign(c,{nome:a.nome,doc:cpf,nasc:a.nasc},a.tel?{tel:a.tel}:{},a.email?{email:a.email}:{});save();render();fichaM(cid)}catch(e){alert(e.message)}}
 function vSes(){const l=sortS(db.sessions.filter(s=>inP(s.data)&&(!est||s.estilo===est))).reverse(),a=l.filter(live),f=sumS(a,'valor'),m=sumS(a,'material');
  return`<header><div><h1>Tatuagens e financeiro</h1><div class="sub">Quanto cobrou, quanto gastou de material e o lucro</div></div>${filt()}</header>
  <div class="grid">${statBox('💲','','R$ '+f.toLocaleString('pt-BR'),'Faturado')}${statBox('🧪','','R$ '+m.toLocaleString('pt-BR'),'Materiais')}${statBox('📈','','R$ '+(f-m).toLocaleString('pt-BR'),'Lucro das tatuagens',f-m<0?'neg':'')}${statBox('⏳','',R(sumS(a.filter(s=>!s.pago),'valor')),'A receber')}</div>
@@ -276,7 +322,7 @@ async function start(){snap=null;screen('<div class="sub">Carregando…</div>');
  }catch(e){return failV(e)}
  if(!db.named&&me.user&&me.user.estudio){db.studio=me.user.estudio;db.named=1;save()}
  $('#auth').style.display='none';$('#app').style.display='';tab='dash';render();showSync();
- if(user.admin)loadUsers();
+ if(user.admin)loadUsers();loadFichas();
  if(!db.named&&(!db.studio||db.studio==='Meu Estúdio'))askName()}
 async function sair(){await queue;if(syncErr&&!syncErr.auth&&!confirm('Algumas alterações não foram salvas e serão perdidas. Sair mesmo assim?'))return;
  syncErr=null;location.href='/cdn-cgi/access/logout'}

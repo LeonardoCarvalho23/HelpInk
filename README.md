@@ -38,6 +38,8 @@ public/index.html          o app (telas)
 src/worker.js              API /api/* + verificação do login do Access + aprovação de contas
 migrations/0001_init.sql   tabela de dados (records)
 migrations/0002_users.sql  tabela de contas (users)
+migrations/0003_forms.sql  fichas de anamnese assinadas (forms)
+public/assinar/index.html  página pública da ficha para o cliente
 wrangler.jsonc             configuração do Worker (banco, Access)
 ```
 
@@ -49,7 +51,7 @@ Tudo pode ser feito pelo painel da Cloudflare (<https://dash.cloudflare.com>), s
 
 1. **Storage & Databases → D1 SQL Database → Create**, nome `helpink`.
 2. Copie o **Database ID** e cole em `wrangler.jsonc` no campo `database_id`.
-3. Abra o banco → aba **Console**, cole e execute o conteúdo de `migrations/0001_init.sql` e depois o de `migrations/0002_users.sql`.
+3. Abra o banco → aba **Console**, cole e execute o conteúdo de `migrations/0001_init.sql` e depois os de `migrations/0002_users.sql` e `migrations/0003_forms.sql` (um comando por vez).
 
 ### 2. Publicar o Worker a partir do GitHub
 
@@ -88,6 +90,41 @@ Dica: em **Settings → Domains & Routes**, desative **Preview URLs** se não fo
 ### Sair
 
 Na aba **Conta** do app, o botão **Sair** encerra a sessão do Access.
+
+## Ficha de anamnese e assinatura do cliente
+
+1. O tatuador cadastra o cliente e clica em **📝 Ficha → Enviar nova ficha**. O app gera um
+   link pessoal (válido por 7 dias, de uso único) e abre o WhatsApp com a mensagem pronta.
+2. O cliente abre `https://<domínio>/assinar/#<código>`, preenche dados, anamnese, lê o termo,
+   marca as declarações (riscos, veracidade, consentimento LGPD para dados de saúde e,
+   opcionalmente, uso de imagem) e assina digitando o nome completo.
+   Menores de 18 anos: o responsável legal preenche os dados dele e assina.
+3. O servidor gera o documento final (HTML), calcula o **SHA-256**, grava a trilha de evidências
+   (link criado, aberto, assinado, IP, país, navegador) e envia o SHA-256 ao
+   **OpenTimestamps** (carimbo do tempo público e gratuito).
+4. O cliente baixa a própria via e vê o código SHA-256. Depois disso o link não mostra mais os dados.
+5. O tatuador vê o status, baixa o documento (o app confere o SHA-256), baixa o carimbo `.ots`
+   e pode copiar os dados da ficha para o cadastro.
+
+Proteções:
+- O código do link fica depois do `#`, então nunca chega ao servidor nem aparece em logs;
+  o banco guarda só o SHA-256 do código.
+- Fichas assinadas não podem ser alteradas nem apagadas (triggers `forms_lock` e
+  `forms_nodelete` no D1).
+- As rotas públicas (`/assinar/` e `/assinar/api/*`) só respondem a quem tem o link e nunca
+  devolvem dados de outras fichas.
+
+Para conferir um documento: calcule o SHA-256 do arquivo (`certutil -hashfile arquivo.html SHA256`
+no Windows ou `shasum -a 256 arquivo.html` no Mac/Linux) e compare com o código registrado.
+O arquivo `.ots` pode ser conferido em <https://opentimestamps.org> junto com o `.html`
+(a confirmação na blockchain leva algumas horas após a assinatura).
+
+**Configuração no Access:** as rotas públicas precisam ficar fora do login. Em
+**Zero Trust → Access controls → Applications**, crie uma aplicação *Self-hosted* com destino
+`<domínio>/assinar` e uma política **Bypass → Everyone**.
+
+O texto do termo fica em `src/worker.js` (`buildTerm`). Peça a um advogado para revisá-lo;
+ao mudar o texto, altere também `TERM_VERSION`. Cada ficha guarda a versão do termo que foi assinada.
 
 ## Dados antigos
 

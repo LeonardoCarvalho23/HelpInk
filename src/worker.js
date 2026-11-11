@@ -35,8 +35,13 @@ async function readJson(req) {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url);
+    // Rotas públicas da ficha do cliente (sem login; acesso só com o link secreto)
+    if (url.pathname.startsWith('/assinar/api/')) {
+      try { return await publicForm(req, env, ctx, url); }
+      catch (e) { console.error(e); return json({ error: 'Erro no servidor' }, 500); }
+    }
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(req);
 
     let email;
@@ -107,6 +112,8 @@ export default {
       if (acc.status !== 'approved')
         return json({ error: 'Sua conta ainda não foi aprovada.', code: 'not_approved', status: acc.status }, 403);
 
+      if (url.pathname === '/api/forms' || url.pathname === '/api/forms/doc') return await ownerForms(req, env, url, email);
+
       if (url.pathname === '/api/data' && req.method === 'GET') {
         const { results } = await env.DB
           .prepare('SELECT col, id, data FROM records WHERE user_id = ?')
@@ -168,6 +175,281 @@ export default {
     }
   }
 };
+
+/* ---------------- Ficha de anamnese e assinatura eletrônica ---------------- */
+
+const FORM_TTL_DAYS = 7;
+const TERM_VERSION = '2026-11-v1';
+const enc = new TextEncoder();
+const hex = u8 => [...u8].map(x => x.toString(16).padStart(2, '0')).join('');
+const b64 = u8 => { let s = ''; for (const x of u8) s += String.fromCharCode(x); return btoa(s); };
+const b64url = u8 => b64(u8).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const sha256 = async str => new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(str)));
+const newToken = () => b64url(crypto.getRandomValues(new Uint8Array(32)));
+const newId = () => hex(crypto.getRandomValues(new Uint8Array(8)));
+const nowIso = () => new Date().toISOString();
+const brt = iso => new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'medium' });
+const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const normName = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const RE_TOKEN = /^[A-Za-z0-9_-]{43}$/;
+
+function cpfOk(c) {
+  c = String(c || '').replace(/\D/g, '');
+  if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+  for (const n of [9, 10]) {
+    let s = 0;
+    for (let i = 0; i < n; i++) s += +c[i] * (n + 1 - i);
+    if ((s * 10) % 11 % 10 !== +c[n]) return false;
+  }
+  return true;
+}
+const fmtCpf = c => String(c).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
+const QUESTIONS = [
+  { id: 'alergia', q: 'Tem alguma alergia (látex, metais, tintas, pomadas, anestésicos, medicamentos ou outra)?', det: 'Quais?' },
+  { id: 'medicamentos', q: 'Usa algum medicamento contínuo ou está em tratamento médico?', det: 'Quais?' },
+  { id: 'anticoagulante', q: 'Tomou anticoagulante, AAS/aspirina ou anti-inflamatório nos últimos 7 dias?', det: 'Qual e quando?' },
+  { id: 'diabetes', q: 'Tem diabetes?', det: 'Tipo e se está controlada' },
+  { id: 'cardiaco', q: 'Tem pressão alta, problema cardíaco ou usa marca-passo?', det: 'Qual?' },
+  { id: 'coagulacao', q: 'Tem hemofilia ou outro problema de coagulação ou cicatrização?', det: 'Qual?' },
+  { id: 'queloide', q: 'Tem tendência a queloide ou cicatrizes elevadas?', det: 'Onde/quando?' },
+  { id: 'pele', q: 'Tem doença de pele (dermatite, psoríase, vitiligo, micose) na região a ser tatuada?', det: 'Qual?' },
+  { id: 'infecciosa', q: 'Tem alguma doença infectocontagiosa (ex.: hepatite, HIV) ou imunidade baixa?', det: 'Se quiser, descreva', opt: true },
+  { id: 'epilepsia', q: 'Tem epilepsia ou já teve convulsões ou desmaios (inclusive com agulhas ou sangue)?', det: 'Quando?' },
+  { id: 'gestante', q: 'Está grávida ou amamentando?' },
+  { id: 'alcool', q: 'Consumiu bebida alcoólica ou drogas nas últimas 24 horas?', det: 'O quê?' }
+];
+
+function buildTerm(studio) {
+  const s = studio || 'o estúdio';
+  return {
+    version: TERM_VERSION,
+    questions: QUESTIONS,
+    text: [
+      `Declaro que fui informado(a) por ${s} de que a tatuagem é um procedimento que perfura a pele com agulhas e deposita pigmento de forma permanente, e de que sua remoção é difícil, cara e pode deixar marcas.`,
+      'Fui informado(a) dos possíveis riscos, entre eles: dor, sangramento, inchaço, infecção, reação alérgica a pigmentos ou materiais, cicatrização irregular, formação de queloide e variação de cor ou traço conforme o tipo de pele, a região do corpo e os cuidados posteriores.',
+      'Comprometo-me a seguir as orientações de cuidados passadas pelo estúdio e, em caso de sinais de infecção ou reação alérgica, a procurar atendimento médico e avisar o estúdio.',
+      'Estou ciente de que omitir ou prestar informações falsas sobre minha saúde pode aumentar os riscos do procedimento e será considerado na apuração de eventual responsabilidade.',
+      'O desenho, o tamanho e o local da tatuagem serão combinados com o(a) tatuador(a) antes do início do procedimento.',
+      'Declaro não estar sob efeito de álcool ou drogas no momento do procedimento e estar em plenas condições de consentir.'
+    ],
+    decls: [
+      { id: 'riscos', req: true, t: 'Li e entendi o termo acima, incluindo os riscos e os cuidados necessários antes e depois do procedimento.' },
+      { id: 'verdade', req: true, t: 'As informações pessoais e de saúde que prestei nesta ficha são verdadeiras e completas. Comprometo-me a avisar o estúdio se algo mudar antes do procedimento.' },
+      { id: 'lgpd', req: true, t: `Autorizo ${s} a tratar meus dados pessoais e de saúde informados nesta ficha exclusivamente para avaliar e realizar o procedimento e para o exercício regular de direitos, mantendo-os por até 5 anos após o atendimento (LGPD, art. 11, I).` },
+      { id: 'imagem', req: false, t: '(Opcional) Autorizo o uso de fotos da tatuagem, sem identificação do meu rosto, no portfólio e nas redes sociais do estúdio.' }
+    ],
+    privacy: `${s} é responsável (controlador) pelos dados desta ficha, que são armazenados com segurança pelo sistema HelpInk (operador). Os dados de saúde são usados apenas para avaliar e realizar o procedimento e para o exercício regular de direitos, e ficam guardados por até 5 anos após o atendimento. Você pode pedir acesso, correção ou informações sobre seus dados diretamente ao estúdio.`
+  };
+}
+
+const age = (iso, now) => {
+  const b = new Date(iso + 'T00:00:00Z'), n = new Date(now);
+  let a = n.getUTCFullYear() - b.getUTCFullYear();
+  if (n.getUTCMonth() < b.getUTCMonth() || (n.getUTCMonth() === b.getUTCMonth() && n.getUTCDate() < b.getUTCDate())) a--;
+  return a;
+};
+const validDate = s => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || '')) return false;
+  const d = new Date(s + 'T00:00:00Z');
+  return !isNaN(d) && d.toISOString().slice(0, 10) === s;
+};
+
+// Valida o que o cliente enviou. Devolve { errors, clean }.
+function validateSign(term, d, now) {
+  const errors = [], str = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+  if (!d || typeof d !== 'object') return { errors: ['Dados inválidos.'] };
+  const c = {
+    nome: str(d.nome, 120), cpf: str(d.cpf, 20).replace(/\D/g, ''), nasc: str(d.nasc, 10),
+    tel: str(d.tel, 30), email: str(d.email, 120), obs: str(d.obs, 1000), assinatura: str(d.assinatura, 120)
+  };
+  if (c.nome.split(' ').filter(Boolean).length < 2) errors.push('Informe seu nome completo.');
+  if (!cpfOk(c.cpf)) errors.push('CPF inválido.');
+  if (!validDate(c.nasc) || c.nasc > now.slice(0, 10) || age(c.nasc, now) > 120) errors.push('Data de nascimento inválida.');
+  if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) errors.push('E-mail inválido.');
+  c.menor = validDate(c.nasc) && age(c.nasc, now) < 18;
+  if (c.menor) {
+    const r = d.resp && typeof d.resp === 'object' ? d.resp : {};
+    c.resp = { nome: str(r.nome, 120), cpf: str(r.cpf, 20).replace(/\D/g, ''), parentesco: str(r.parentesco, 40) };
+    if (c.resp.nome.split(' ').filter(Boolean).length < 2) errors.push('Informe o nome completo do responsável legal.');
+    if (!cpfOk(c.resp.cpf) || c.resp.cpf === c.cpf) errors.push('CPF do responsável legal inválido.');
+    if (!c.resp.parentesco) errors.push('Informe o parentesco do responsável legal.');
+  }
+  const ans = d.answers && typeof d.answers === 'object' ? d.answers : {};
+  c.answers = {};
+  for (const q of term.questions) {
+    const a = ans[q.id] && typeof ans[q.id] === 'object' ? ans[q.id] : {};
+    const v = a.v === 'sim' || a.v === 'nao' ? a.v : '';
+    const det = q.det ? str(a.d, 500) : '';
+    if (!v) errors.push('Responda: ' + q.q);
+    else if (v === 'sim' && q.det && !q.opt && det.length < 2) errors.push('Detalhe a resposta: ' + q.q);
+    c.answers[q.id] = { v, d: v === 'sim' ? det : '' };
+  }
+  const dec = d.decls && typeof d.decls === 'object' ? d.decls : {};
+  c.decls = {};
+  for (const x of term.decls) {
+    c.decls[x.id] = dec[x.id] === true;
+    if (x.req && !c.decls[x.id]) errors.push('Marque a declaração: ' + x.t.slice(0, 60) + '…');
+  }
+  const signer = c.menor ? (c.resp || {}).nome : c.nome;
+  if (!c.assinatura || normName(c.assinatura) !== normName(signer))
+    errors.push(`Para assinar, digite o nome completo ${c.menor ? 'do responsável legal' : ''} exatamente como informado acima.`.replace('  ', ' '));
+  return { errors, clean: c };
+}
+
+// Documento final (HTML autocontido). O SHA-256 deste texto é a "impressão digital" entregue ao cliente.
+function buildDoc(f, term, c, ev) {
+  const row = (k, v) => `<tr><th>${h(k)}</th><td>${h(v)}</td></tr>`;
+  const ans = term.questions.map(q => {
+    const a = c.answers[q.id];
+    return `<tr><td>${h(q.q)}</td><td>${a.v === 'sim' ? 'Sim' : 'Não'}</td><td>${h(a.d)}</td></tr>`;
+  }).join('');
+  const signer = c.menor ? c.resp : c;
+  return `<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Ficha de anamnese - ${h(c.nome)}</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;max-width:780px;margin:24px auto;padding:0 16px;color:#111;line-height:1.45}h1{font-size:20px}h2{font-size:16px;margin-top:26px;border-bottom:1px solid #bbb;padding-bottom:4px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;vertical-align:top;font-size:14px}th{width:34%;background:#f5f5f5}.small{font-size:12px;color:#444}</style></head>
+<body>
+<h1>Ficha de anamnese e termo de consentimento para tatuagem</h1>
+<table>${row('Estúdio', f.studio)}${row('Ficha nº', f.id)}${row('Versão do termo', term.version)}</table>
+<h2>1. Dados do cliente</h2>
+<table>${row('Nome completo', c.nome)}${row('CPF', fmtCpf(c.cpf))}${row('Data de nascimento', c.nasc.split('-').reverse().join('/'))}${row('Telefone', c.tel)}${row('E-mail', c.email)}</table>
+${c.menor ? `<h2>Responsável legal (cliente menor de 18 anos)</h2><table>${row('Nome completo', c.resp.nome)}${row('CPF', fmtCpf(c.resp.cpf))}${row('Parentesco', c.resp.parentesco)}</table>` : ''}
+<h2>2. Anamnese</h2>
+<table><tr><th>Pergunta</th><th style="width:12%">Resposta</th><th>Detalhes</th></tr>${ans}</table>
+<p><b>Outras observações:</b> ${h(c.obs) || '—'}</p>
+<h2>3. Termo de consentimento</h2>
+<ol>${term.text.map(t => `<li>${h(t)}</li>`).join('')}</ol>
+<h2>4. Declarações</h2>
+<ul>${term.decls.map(x => `<li>[${c.decls[x.id] ? 'X' : ' '}] ${h(x.t)}</li>`).join('')}</ul>
+<h2>5. Aviso de privacidade</h2>
+<p>${h(term.privacy)}</p>
+<h2>6. Assinatura eletrônica</h2>
+<p>Assinado eletronicamente por <b>${h(signer.nome)}</b> (CPF ${h(fmtCpf(signer.cpf))})${c.menor ? ', responsável legal' : ''}, que digitou o próprio nome completo como assinatura: <b>${h(c.assinatura)}</b>.</p>
+<p>Data e hora: <b>${h(brt(ev.signed_at))}</b> (horário de Brasília) — ${h(ev.signed_at)} (UTC).</p>
+<h2>7. Registro de evidências</h2>
+<table>${row('Link criado em', brt(f.created_at) + ' — pela conta ' + f.owner)}${row('Link válido até', brt(f.expires_at))}${row('Link aberto pela primeira vez em', ev.opened ? brt(ev.opened.at) + ' — IP ' + ev.opened.ip : '—')}${row('Assinado em', brt(ev.signed_at))}${row('IP de quem assinou', ev.ip)}${row('País (aproximado)', ev.country)}${row('Navegador / dispositivo', ev.ua)}</table>
+<p class="small">Documento gerado automaticamente pelo sistema HelpInk no momento da assinatura. Assinatura eletrônica nos termos do art. 10, §2º, da MP 2.200-2/2001. O código SHA-256 deste arquivo foi exibido ao signatário no momento da assinatura e registrado pelo sistema; qualquer alteração no arquivo, por menor que seja, muda esse código. O código também foi enviado a um serviço público de carimbo do tempo (OpenTimestamps).</p>
+</body></html>
+`;
+}
+
+async function stampOts(env, id, digest) {
+  const magic = [0x00, ...enc.encode('OpenTimestamps'), 0x00, 0x00, ...enc.encode('Proof'), 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+  for (const cal of ['https://a.pool.opentimestamps.org', 'https://b.pool.opentimestamps.org']) {
+    try {
+      const r = await fetch(cal + '/digest', { method: 'POST', body: digest, headers: { accept: 'application/vnd.opentimestamps.v1' } });
+      if (!r.ok) continue;
+      const ts = new Uint8Array(await r.arrayBuffer());
+      if (!ts.length || ts.length > 8192) continue;
+      const file = new Uint8Array([...magic, 0x01, 0x08, ...digest, ...ts]); // arquivo .ots (SHA-256 do documento)
+      await env.DB.prepare('UPDATE forms SET ots = ? WHERE id = ? AND ots IS NULL').bind(b64(file), id).run();
+      return;
+    } catch (e) { console.error('ots', e); }
+  }
+}
+
+// Rotas públicas: /assinar/api/form (abrir) e /assinar/api/sign (assinar). Só o link (token) dá acesso.
+async function publicForm(req, env, ctx, url) {
+  if (req.method !== 'POST') return json({ error: 'Método não permitido' }, 405);
+  if (!(req.headers.get('content-type') || '').includes('application/json')) return json({ error: 'Content-Type inválido' }, 415);
+  const origin = req.headers.get('origin');
+  if (origin && origin !== url.origin) return json({ error: 'Origem não permitida' }, 403);
+  const len = +req.headers.get('content-length') || 0;
+  if (len > 64 * 1024) return json({ error: 'Requisição grande demais' }, 413);
+  const text = await req.text();
+  if (text.length > 64 * 1024) return json({ error: 'Requisição grande demais' }, 413);
+  let body; try { body = JSON.parse(text); } catch { return json({ error: 'JSON inválido' }, 400); }
+  const invalid = () => json({ error: 'Link inválido. Peça um novo link ao estúdio.' }, 404);
+  if (!body || typeof body.t !== 'string' || !RE_TOKEN.test(body.t)) return invalid();
+  const f = await env.DB.prepare('SELECT * FROM forms WHERE token_hash = ?').bind(hex(await sha256(body.t))).first();
+  if (!f) return invalid();
+  const now = nowIso();
+  const expired = f.status === 'cancelled' || (f.status === 'pending' && f.expires_at < now);
+  const ip = req.headers.get('cf-connecting-ip') || 'desconhecido';
+  const ua = (req.headers.get('user-agent') || 'desconhecido').slice(0, 300);
+  const country = (req.cf && req.cf.country) || 'desconhecido';
+
+  if (url.pathname === '/assinar/api/form') {
+    if (f.status === 'signed') return json({ status: 'signed', studio: f.studio, signed_at: f.signed_at, doc_hash: f.doc_hash });
+    if (expired) return json({ status: 'expired', studio: f.studio });
+    if (!f.opened_at)
+      await env.DB.prepare('UPDATE forms SET opened_at = ?, evidence = ? WHERE id = ? AND opened_at IS NULL')
+        .bind(now, JSON.stringify({ opened: { at: now, ip, ua, country } }), f.id).run();
+    return json({ status: 'pending', studio: f.studio, hint: f.client_hint, expires_at: f.expires_at, term: JSON.parse(f.term) });
+  }
+
+  if (url.pathname === '/assinar/api/sign') {
+    if (f.status === 'signed') return json({ error: 'Esta ficha já foi assinada.' }, 409);
+    if (expired) return json({ error: 'Este link expirou. Peça um novo link ao estúdio.' }, 410);
+    if (f.attempts >= 30) return json({ error: 'Muitas tentativas. Peça um novo link ao estúdio.' }, 429);
+    await env.DB.prepare('UPDATE forms SET attempts = attempts + 1 WHERE id = ?').bind(f.id).run();
+    const term = JSON.parse(f.term);
+    const { errors, clean } = validateSign(term, body.data, now);
+    if (errors.length) return json({ error: 'Confira os dados.', errors }, 400);
+    const prev = f.evidence ? JSON.parse(f.evidence) : {};
+    const ev = { opened: prev.opened || null, signed_at: now, ip, ua, country, term_version: term.version };
+    const doc = buildDoc(f, term, clean, ev);
+    const digest = await sha256(doc), docHash = hex(digest);
+    const r = await env.DB.prepare(
+      `UPDATE forms SET status = 'signed', signed_at = ?, answers = ?, doc = ?, doc_hash = ?, evidence = ?
+       WHERE id = ? AND status = 'pending'`
+    ).bind(now, JSON.stringify(clean), doc, docHash, JSON.stringify(ev), f.id).run();
+    if (!r.meta || !r.meta.changes) return json({ error: 'Esta ficha já foi assinada.' }, 409);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(stampOts(env, f.id, digest));
+    return json({ status: 'signed', studio: f.studio, signed_at: now, doc, doc_hash: docHash });
+  }
+  return json({ error: 'Não encontrado' }, 404);
+}
+
+// Rotas do tatuador (com login): listar, criar link, novo link, cancelar, baixar documento.
+async function ownerForms(req, env, url, email) {
+  if (url.pathname === '/api/forms' && req.method === 'GET') {
+    const { results } = await env.DB.prepare(
+      `SELECT id, client_id, status, created_at, expires_at, opened_at, signed_at, doc_hash, ots IS NOT NULL AS has_ots
+       FROM forms WHERE owner = ? ORDER BY created_at DESC LIMIT 5000`
+    ).bind(email).all();
+    return json({ forms: results });
+  }
+  if (url.pathname === '/api/forms/doc' && req.method === 'GET') {
+    const id = url.searchParams.get('id') || '';
+    const f = await env.DB.prepare(`SELECT id, doc, doc_hash, answers, ots, signed_at FROM forms WHERE id = ? AND owner = ? AND status = 'signed'`)
+      .bind(id, email).first();
+    if (!f) return json({ error: 'Ficha não encontrada' }, 404);
+    return json({ id: f.id, doc: f.doc, doc_hash: f.doc_hash, answers: JSON.parse(f.answers), ots: f.ots, signed_at: f.signed_at });
+  }
+  if (url.pathname === '/api/forms' && req.method === 'POST') {
+    const { body, tooBig } = await readJson(req);
+    if (tooBig) return json({ error: 'Requisição grande demais' }, 413);
+    const b = body && typeof body === 'object' ? body : {};
+    const expires = new Date(Date.now() + FORM_TTL_DAYS * 864e5).toISOString();
+    if (b.action === 'create') {
+      if (typeof b.client_id !== 'string' || !RE_ID.test(b.client_id)) return json({ error: 'Cliente inválido' }, 400);
+      const cli = await env.DB.prepare(`SELECT data FROM records WHERE user_id = ? AND col = 'clients' AND id = ?`).bind(email, b.client_id).first();
+      if (!cli) return json({ error: 'Cliente não encontrado. Aguarde salvar e tente de novo.' }, 404);
+      const meta = await env.DB.prepare(`SELECT data FROM records WHERE user_id = ? AND col = 'meta' AND id = 'profile'`).bind(email).first();
+      const studio = String((meta && JSON.parse(meta.data).studio) || 'Estúdio').slice(0, 80);
+      const hint = String(JSON.parse(cli.data).nome || '').trim().split(/\s+/)[0].slice(0, 40);
+      const token = newToken(), id = newId();
+      await env.DB.prepare(
+        `INSERT INTO forms (id, token_hash, owner, client_id, studio, client_hint, term, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(id, hex(await sha256(token)), email, b.client_id, studio, hint, JSON.stringify(buildTerm(studio)), nowIso(), expires).run();
+      return json({ id, token, expires_at: expires });
+    }
+    if (b.action === 'relink' || b.action === 'cancel') {
+      if (typeof b.id !== 'string' || !/^[0-9a-f]{16}$/.test(b.id)) return json({ error: 'Ficha inválida' }, 400);
+      if (b.action === 'cancel') {
+        const r = await env.DB.prepare(`UPDATE forms SET status = 'cancelled' WHERE id = ? AND owner = ? AND status = 'pending'`).bind(b.id, email).run();
+        return r.meta && r.meta.changes ? json({ ok: true }) : json({ error: 'Só é possível cancelar fichas pendentes' }, 409);
+      }
+      const token = newToken();
+      const r = await env.DB.prepare(`UPDATE forms SET token_hash = ?, expires_at = ?, attempts = 0 WHERE id = ? AND owner = ? AND status = 'pending'`)
+        .bind(hex(await sha256(token)), expires, b.id, email).run();
+      return r.meta && r.meta.changes ? json({ id: b.id, token, expires_at: expires }) : json({ error: 'Só é possível gerar link para fichas pendentes' }, 409);
+    }
+    return json({ error: 'Ação inválida' }, 400);
+  }
+  return json({ error: 'Não encontrado' }, 404);
+}
 
 /* ---------------- Contas ---------------- */
 

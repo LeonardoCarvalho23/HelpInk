@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Ficha de anamnese · HelpInk</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:#fafafa;--cd:#fff;--tx:#18181b;--mu:#71717a;--bd:#e4e4e7;--in:#f4f4f5;--g:#f5b0cd;--gl:#fdf0f6;--gt:#be185d;--on:#4a0d2b;--am:#fef3c7;--amt:#92400e;--rd:#fee2e2;--rdt:#b91c1c;--ok:#d1fae5;--okt:#065f46}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--ok:#064e3b;--okt:#6ee7b7}}
+:root[data-theme="dark"]{--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--ok:#064e3b;--okt:#6ee7b7}
+*{box-sizing:border-box}
+body{margin:0;font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.45}
+main{max-width:720px;margin:0 auto;padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px))}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;margin-bottom:18px}
+.logo b{background:var(--g);color:var(--on);width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+h1{font-size:23px;margin:0 0 4px}h2{font-size:18px;margin:0 0 6px}.sub{color:var(--mu);font-size:14px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-top:14px}
+label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}
+input,textarea{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:11px 12px;width:100%}
+textarea{min-height:80px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.q{padding:12px 0;border-top:1px solid var(--bd)}.q:first-of-type{border-top:0}
+.q p{margin:0 0 8px}
+.yn{display:flex;gap:8px}.yn label{margin:0;display:flex;align-items:center;gap:6px;background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;color:var(--tx);font-size:15px;cursor:pointer}
+.yn input{width:18px;height:18px;margin:0}
+.ck{display:flex;gap:10px;align-items:flex-start;color:var(--tx);font-size:15px;margin:12px 0}.ck input{width:22px;height:22px;flex:none;margin-top:1px}
+ol{padding-left:20px}ol li{margin-bottom:6px}
+.note{font-size:13px;background:var(--in);padding:10px 12px;border-radius:10px;color:var(--mu);margin-top:12px}
+.warn{background:var(--am);color:var(--amt)}.err{background:var(--rd);color:var(--rdt)}.okb{background:var(--ok);color:var(--okt)}
+.btn{all:unset;cursor:pointer;background:var(--g);color:var(--on);padding:13px 18px;border-radius:12px;font-size:16px;font-weight:600;text-align:center;display:block}
+.btn.s{background:var(--in);color:var(--tx);font-weight:500}.bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.bar .btn{flex:1;min-width:180px}
+code{word-break:break-all;font-size:13px;background:var(--in);padding:2px 6px;border-radius:6px}
+.hide{display:none}
+@media(max-width:560px){.f2{grid-template-columns:1fr}h1{font-size:20px}}
+</style></head><body>
+<main id="m"><div class="logo"><b>H</b><span>HelpInk</span></div><div class="sub">Carregando…</div></main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const T=location.hash.slice(1);let F=null;
+const dt=iso=>new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+const head=()=>`<div class="logo"><b>H</b><span>HelpInk</span></div>`;
+function msg(t,b,cls){$('#m').innerHTML=head()+`<div class="card"><h1>${t}</h1><div class="note ${cls||''}">${b}</div></div>`}
+async function call(path,body){let r;try{r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store'})}catch(e){throw new Error('Sem conexão. Verifique sua internet e tente de novo.')}
+ const j=await r.json().catch(()=>null);if(!j)throw new Error('Erro do servidor ('+r.status+'). Tente de novo.');if(!r.ok){const e=new Error(j.error||'Erro');e.list=j.errors;throw e}return j}
+function maskD(e){let v=e.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);else if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);e.value=v}
+function maskC(e){let v=e.value.replace(/\D/g,'').slice(0,11);e.value=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2')}
+const iso=s=>{const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s.trim());return m?m[3]+'-'+m[2]+'-'+m[1]:''};
+function ageOf(isoD){if(!isoD)return null;const b=new Date(isoD+'T00:00:00'),n=new Date();if(isNaN(b))return null;let a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a}
+async function init(){
+ if(!/^[A-Za-z0-9_-]{43}$/.test(T))return msg('Link incompleto','Abra o link completo que o estúdio enviou para você (incluindo a parte depois do #).','warn');
+ try{F=await call('/assinar/api/form',{t:T})}catch(e){return msg('Link inválido',esc(e.message),'err')}
+ if(F.status==='signed')return msg('Ficha já assinada ✅',`Esta ficha foi assinada em ${dt(F.signed_at)}.<br>Código de verificação (SHA-256): <code>${esc(F.doc_hash)}</code><br>Se precisar de uma cópia, peça ao estúdio.`,'okb');
+ if(F.status==='expired')return msg('Link expirado','Este link não é mais válido. Peça um novo link ao estúdio.','warn');
+ form()}
+function form(){const t=F.term;
+ $('#m').innerHTML=head()+`<h1>Ficha de anamnese</h1><div class="sub">${esc(F.studio)} · link válido até ${dt(F.expires_at)}</div>
+ <div class="card"><div>Olá${F.hint?', '+esc(F.hint):''}! Antes da sua sessão, preencha seus dados e sua ficha de saúde e assine o termo de consentimento. Leva uns 5 minutos.</div>
+ <div class="note">Suas respostas são confidenciais e usadas apenas pelo estúdio para a sua segurança durante o procedimento.</div></div>
+ <div class="card"><h2>1. Seus dados</h2>
+  <label>Nome completo *</label><input id="nome" autocomplete="name" maxlength="120">
+  <div class="f2"><div><label>CPF *</label><input id="cpf" inputmode="numeric" maxlength="14" oninput="maskC(this)"></div>
+  <div><label>Data de nascimento *</label><input id="nasc" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="maskD(this);minor()"></div>
+  <div><label>Telefone / WhatsApp</label><input id="tel" type="tel" autocomplete="tel" maxlength="30"></div>
+  <div><label>E-mail</label><input id="email" type="email" autocomplete="email" maxlength="120"></div></div>
+ </div>
+ <div class="card hide" id="respBox"><h2>Responsável legal</h2>
+  <div class="note warn">Como o cliente é menor de 18 anos, a ficha deve ser preenchida e assinada pelo pai, mãe ou responsável legal. Em alguns estados a tatuagem em menores é proibida mesmo com autorização.</div>
+  <label>Nome completo do responsável *</label><input id="rnome" maxlength="120">
+  <div class="f2"><div><label>CPF do responsável *</label><input id="rcpf" inputmode="numeric" maxlength="14" oninput="maskC(this)"></div>
+  <div><label>Parentesco *</label><input id="rpar" maxlength="40" placeholder="Mãe, pai, tutor…"></div></div>
+ </div>
+ <div class="card"><h2>2. Ficha de saúde (anamnese)</h2>
+  ${t.questions.map(q=>`<div class="q" data-q="${esc(q.id)}"><p>${esc(q.q)} *</p><div class="yn">
+   <label><input type="radio" name="q_${esc(q.id)}" value="sim" onchange="det('${esc(q.id)}')">Sim</label>
+   <label><input type="radio" name="q_${esc(q.id)}" value="nao" onchange="det('${esc(q.id)}')">Não</label></div>
+   ${q.det?`<div class="hide" id="d_${esc(q.id)}"><label>${esc(q.det)}${q.opt?'':' *'}</label><input id="t_${esc(q.id)}" maxlength="500"></div>`:''}</div>`).join('')}
+  <label>Outras observações sobre sua saúde (opcional)</label><textarea id="obs" maxlength="1000"></textarea>
+ </div>
+ <div class="card"><h2>3. Termo de consentimento</h2><div class="sub">Versão ${esc(t.version)}</div>
+  <ol>${t.text.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+  ${t.decls.map(d=>`<label class="ck"><input type="checkbox" id="c_${esc(d.id)}">${esc(d.t)}${d.req?' *':''}</label>`).join('')}
+  <div class="note"><b>Aviso de privacidade.</b> ${esc(t.privacy)}</div>
+ </div>
+ <div class="card"><h2>4. Assinatura</h2>
+  <div class="sub" id="sigLbl">Para assinar, digite seu nome completo exatamente como informado acima.</div>
+  <label>Assinatura (nome completo) *</label><input id="sig" maxlength="120" autocomplete="off">
+  <div class="note">Ao clicar em "Assinar ficha", você assina eletronicamente este documento. Registramos data, hora, endereço IP e dispositivo, e você recebe uma cópia com um código que comprova que ela não foi alterada.</div>
+  <div id="errs"></div>
+  <div class="bar"><button class="btn" id="go">Assinar ficha</button></div>
+ </div>`;
+ $('#go').onclick=sign;}
+function det(id){const v=(document.querySelector(`input[name="q_${id}"]:checked`)||{}).value,b=$('#d_'+id);if(b)b.classList.toggle('hide',v!=='sim')}
+function minor(){const a=ageOf(iso($('#nasc').value)),m=a!==null&&a<18;$('#respBox').classList.toggle('hide',!m);
+ $('#sigLbl').textContent=m?'Para assinar, o responsável legal deve digitar o próprio nome completo, exatamente como informado acima.':'Para assinar, digite seu nome completo exatamente como informado acima.';return m}
+async function sign(){const t=F.term,b=$('#go');
+ const data={nome:$('#nome').value,cpf:$('#cpf').value,nasc:iso($('#nasc').value),tel:$('#tel').value,email:$('#email').value,obs:$('#obs').value,assinatura:$('#sig').value,answers:{},decls:{}};
+ if(minor())data.resp={nome:$('#rnome').value,cpf:$('#rcpf').value,parentesco:$('#rpar').value};
+ for(const q of t.questions){const v=(document.querySelector(`input[name="q_${q.id}"]:checked`)||{}).value||'';data.answers[q.id]={v,d:q.det?$('#t_'+q.id).value:''}}
+ for(const d of t.decls)data.decls[d.id]=$('#c_'+d.id).checked;
+ b.textContent='Assinando…';b.style.pointerEvents='none';$('#errs').innerHTML='';
+ try{const r=await call('/assinar/api/sign',{t:T,data});done(r)}
+ catch(e){b.textContent='Assinar ficha';b.style.pointerEvents='';
+  $('#errs').innerHTML=`<div class="note err"><b>${esc(e.message)}</b>${e.list?'<ul>'+e.list.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':''}</div>`;$('#errs').scrollIntoView({behavior:'smooth',block:'center'})}}
+let DOC=null;
+async function done(r){DOC=r;
+ let ok='';try{const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(r.doc)));ok=[...d].map(x=>x.toString(16).padStart(2,'0')).join('')===r.doc_hash?' ✔ conferido':''}catch(e){}
+ $('#m').innerHTML=head()+`<div class="card"><h1>Ficha assinada ✅</h1><div class="sub">${esc(r.studio)} · ${dt(r.signed_at)}</div>
+ <div class="note okb">Pronto! Sua ficha foi assinada e enviada ao estúdio.</div>
+ <h2 style="margin-top:18px">Sua via assinada</h2>
+ <div class="sub">Baixe e guarde o arquivo abaixo. Ele é a sua cópia do documento assinado.</div>
+ <div class="bar"><button class="btn" onclick="dl()">⬇ Baixar minha cópia</button><button class="btn s" onclick="openDoc()">Abrir / imprimir</button></div>
+ <label>Código de verificação (SHA-256)${ok}</label><code>${esc(r.doc_hash)}</code>
+ <div class="note">Este código é a "impressão digital" do arquivo: se qualquer letra do documento for alterada, o código muda. Anote ou tire um print desta tela. Por segurança, depois de fechar esta página a ficha não poderá mais ser vista por este link.</div></div>`}
+const blob=()=>new Blob([DOC.doc],{type:'text/html;charset=utf-8'});
+function dl(){const a=document.createElement('a');a.href=URL.createObjectURL(blob());a.download='ficha-anamnese-'+DOC.signed_at.slice(0,10)+'.html';document.body.appendChild(a);a.click();a.remove()}
+function openDoc(){window.open(URL.createObjectURL(blob()),'_blank')}
+init();
+</script></body></html>
