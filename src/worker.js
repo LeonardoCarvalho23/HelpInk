@@ -45,6 +45,11 @@ async function readJson(req) {
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
+    // Só HTTPS: a ficha leva dados de saúde e CPF, que nunca podem trafegar sem criptografia.
+    if (url.protocol === 'http:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+      if (req.method === 'GET' || req.method === 'HEAD') { url.protocol = 'https:'; return Response.redirect(url.toString(), 301); }
+      return json({ error: 'Use o endereço com https://' }, 403);
+    }
     // Rotas públicas da ficha do cliente (sem login; acesso só com o link secreto)
     if (url.pathname.startsWith('/assinar/api/')) {
       try { return await publicForm(req, env, ctx, url); }
@@ -56,7 +61,8 @@ export default {
     try {
       email = await identify(req, env, url);
     } catch (e) {
-      return json({ error: 'Não autorizado: ' + e.message }, 401);
+      console.warn('login recusado:', e.message); // o motivo fica só no log, não na resposta
+      return json({ error: 'Não autorizado. Entre de novo.' }, 401);
     }
 
     try {
@@ -620,7 +626,8 @@ async function verifyJwt(token, team) {
   const header = dec(b64u(h));
   if (header.alg !== 'RS256') throw new Error('algoritmo inválido');
   let jwk = (await accessKeys(team)).find(k => k.kid === header.kid);
-  if (!jwk) jwk = (await accessKeys(team, true)).find(k => k.kid === header.kid); // chaves rotacionadas
+  // Chave desconhecida: busca de novo (o Access troca as chaves de tempo em tempo), no máximo 1x por minuto
+  if (!jwk && Date.now() - certCache.at > 60e3) jwk = (await accessKeys(team, true)).find(k => k.kid === header.kid);
   if (!jwk) throw new Error('chave desconhecida');
   const key = await crypto.subtle.importKey('jwk', { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: 'RS256', ext: true },
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);

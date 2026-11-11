@@ -111,8 +111,7 @@ apontando para a Cloudflare). Em `wrangler.jsonc`:
   para o app existir em um único endereço.
 
 Se um dia você criar outra aplicação do Access que emita login para o app, adicione o AUD dela em
-`ACCESS_AUD`, separado por vírgula. Hoje ele lista o AUD da aplicação de `/app` e `/api` e o da
-proteção antiga do Worker.
+`ACCESS_AUD`, separado por vírgula. Hoje ele lista só o AUD da aplicação de `/app` e `/api`.
 
 ### Sair
 
