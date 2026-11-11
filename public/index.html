@@ -2,64 +2,237 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HelpInk</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#F4F4F7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#121017" media="(prefers-color-scheme: dark)">
 <style>
-:root{color-scheme:light dark;--bg:#fafafa;--cd:#fff;--tx:#18181b;--mu:#71717a;--bd:#e4e4e7;--in:#f4f4f5;--g:#f5b0cd;--gl:#fdf0f6;--gt:#be185d;--on:#4a0d2b;--am:#fef3c7;--amt:#92400e;--rd:#fee2e2;--rdt:#b91c1c;--bl:#e5e7eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--bl:#2c2c32}}
-:root[data-theme="dark"]{--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--bl:#2c2c32}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
-#app{display:flex;min-height:100vh}
-nav{width:240px;background:#18181b;color:#a1a1aa;padding:24px 14px;position:fixed;top:0;bottom:0;left:0;display:flex;flex-direction:column;gap:6px;z-index:20}
-.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:20px;padding:0 8px 22px}
-.logo b{background:#f5b0cd;color:#4a0d2b;width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
-nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;font-size:16px}
-nav button:hover{background:#27272a}nav button.on{background:var(--g);color:var(--on)}
-nav button i{font-style:normal;width:22px;text-align:center}
-main{margin-left:240px;flex:1;padding:28px 32px;max-width:1200px;min-width:0}
-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-h1{margin:0;font-size:26px}h2{margin:0;font-size:18px}.sub{color:var(--mu);font-size:14px;margin-top:4px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:18px}
-.st .top{display:flex;justify-content:space-between;font-size:12px;color:var(--mu)}.st .top em{font-style:normal;color:var(--gt)}
-.st .n{font-size:24px;font-weight:700;margin:12px 0 2px}.st .l{color:var(--mu);font-size:14px}
-.ic{width:38px;height:38px;border-radius:10px;background:var(--gl);display:grid;place-items:center}
-.row{display:flex;align-items:center;gap:14px;background:var(--in);border-radius:10px;padding:12px 14px;margin-top:10px;flex-wrap:wrap}
-.row .t{min-width:56px;text-align:center;font-weight:600;color:var(--gt)}.row .t small{display:block;color:var(--mu);font-weight:400}
-.row .m{flex:1;min-width:140px}.row .m small{color:var(--mu);display:block;font-size:13px}
-.row .v{text-align:right;font-size:13px;color:var(--mu)}.row .v b{display:block;color:var(--tx);font-size:15px}
-.bd{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--gl);color:var(--gt);white-space:nowrap}
-.bd.p{background:var(--am);color:var(--amt)}.bd.x{background:var(--rd);color:var(--rdt)}.bd.c{background:var(--bl);color:var(--mu)}
-.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-.btn{all:unset;cursor:pointer;background:var(--g);color:var(--on);padding:10px 16px;border-radius:10px;font-size:15px;font-weight:500;text-align:center}
-.btn.s{background:var(--in);color:var(--tx);padding:7px 12px;font-size:13px}.btn.d{background:var(--rd);color:var(--rdt)}
-input,select,textarea{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;width:100%}
-.bar input{width:auto;flex:1;min-width:160px}.bar input[type=month]{flex:0}
-label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}label.ck{display:flex;gap:10px;align-items:center;color:var(--tx);font-size:14px}label.ck input{width:20px;height:20px}
-.modal{position:fixed;inset:0;background:#0009;display:grid;place-items:center;z-index:50;padding:12px}
-.modal>div{background:var(--cd);border-radius:16px;padding:22px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.note{font-size:13px;background:var(--in);padding:10px;border-radius:10px;color:var(--mu);margin-top:12px}
-.acts{display:flex;gap:6px}
-.tat{border:1px solid var(--bd);border-radius:12px;padding:12px 14px 14px;margin-top:10px;background:var(--in)}.tat input,.tat select{background:var(--cd)}
-.f3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px}.tath{display:flex;justify-content:space-between;align-items:center;gap:8px}.tl{display:block;color:var(--mu);font-size:13px}.empty{text-align:center;color:var(--mu);padding:28px}
-textarea.big{min-height:200px;font-family:monospace;font-size:12px}
-.pos{color:var(--gt)}.neg{color:var(--rdt)}
-.auth{min-height:100vh;display:grid;place-items:center;padding:16px}.auth .card{width:100%;max-width:400px;padding:26px}
-.auth .logo{display:flex;color:var(--tx);padding:0 0 18px}.auth .logo span{display:inline}.note.neg{color:var(--rdt);background:var(--rd)}
-.alinks{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:14px}.alinks a{color:var(--gt);text-decoration:none}
-#sync{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;z-index:60;font-size:13px;padding:6px 12px;border-radius:99px;background:var(--in);color:var(--mu);border:1px solid var(--bd)}
-#sync.err{background:var(--rd);color:var(--rdt);cursor:pointer}#sync.hide{display:none}
-@media(max-width:1023px){nav{width:72px;align-items:center}nav button span,.logo span{display:none}nav button{padding:12px}main{margin-left:72px;padding:22px}.grid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){nav{top:auto;width:100%;height:calc(62px + env(safe-area-inset-bottom,0px));flex-direction:row;justify-content:space-around;padding:6px 4px env(safe-area-inset-bottom,0px);gap:0}.logo{display:none}
-nav button{flex-direction:column;gap:2px;padding:6px 8px;font-size:10px}nav button span{display:block}main{margin-left:0;padding:16px 14px 90px}h1{font-size:21px}.f2{grid-template-columns:1fr}.grid{gap:10px}.row .v{text-align:left}}
+/* ===== HelpInk · direção "Estêncil" =====
+   Papel frio, tinta quase preta e o violeta da linha de decalque (papel hectográfico) como única cor de ação. */
+:root{color-scheme:light;
+ --paper:#F4F4F7;--surface:#FFFFFF;--raised:#F8F7FB;--line:#E4E2EA;--line-2:#D2CFDB;
+ --ink:#1D1A24;--ink-2:#46414F;--mute:#6B6578;
+ --stencil:#5536C8;--stencil-ink:#FFFFFF;--stencil-soft:#EEEAFB;--stencil-line:#B4A6EC;
+ --ok:#1E7A55;--ok-soft:#E2F2EA;--warn:#9E5604;--warn-soft:#FBEED8;--bad:#BE3048;--bad-soft:#FBE6E9;
+ --scrim:rgba(24,19,34,.5);--shadow:0 1px 2px rgba(29,26,36,.06),0 12px 32px -16px rgba(29,26,36,.28);
+ --r-sm:8px;--r:12px;--r-lg:18px;
+ --f:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-mark:"Grenze Gotisch",Georgia,serif;
+ --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+ --paper:#121017;--surface:#1A1720;--raised:#221E2A;--line:#2C2735;--line-2:#3B3546;
+ --ink:#EEEAF6;--ink-2:#CBC5D8;--mute:#9A92AB;
+ --stencil:#A893FF;--stencil-ink:#170F35;--stencil-soft:#2A2340;--stencil-line:#5D4E96;
+ --ok:#5FCB9A;--ok-soft:#163026;--warn:#F0B25A;--warn-soft:#35260F;--bad:#FF7D90;--bad-soft:#3A1820;
+ --scrim:rgba(0,0,0,.62);--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 40px -16px rgba(0,0,0,.7)}}
+:root[data-theme="dark"]{color-scheme:dark;
+ --paper:#121017;--surface:#1A1720;--raised:#221E2A;--line:#2C2735;--line-2:#3B3546;
+ --ink:#EEEAF6;--ink-2:#CBC5D8;--mute:#9A92AB;
+ --stencil:#A893FF;--stencil-ink:#170F35;--stencil-soft:#2A2340;--stencil-line:#5D4E96;
+ --ok:#5FCB9A;--ok-soft:#163026;--warn:#F0B25A;--warn-soft:#35260F;--bad:#FF7D90;--bad-soft:#3A1820;
+ --scrim:rgba(0,0,0,.62);--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 40px -16px rgba(0,0,0,.7)}
+
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;font:400 15px/1.5 var(--f);background:var(--paper);color:var(--ink);min-height:100vh;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+h1{font-size:28px;line-height:1.15;font-weight:650;letter-spacing:-.018em;margin:0}
+h2{font-size:18px;line-height:1.3;font-weight:600;letter-spacing:-.005em;margin:0}
+h3{font-size:15px;line-height:1.35;font-weight:600;margin:0}
+p{margin:0}.sub{color:var(--mute);font-size:14px;margin-top:4px}
+a{color:var(--stencil)}
+:focus-visible{outline:2px solid var(--stencil);outline-offset:2px}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- Marca ---- */
+.mark{font-family:var(--f-mark);font-weight:600;font-size:31px;line-height:1;color:var(--ink);letter-spacing:.005em}
+
+/* ---- Estrutura ---- */
+#app{min-height:100vh}
+.rail{position:fixed;inset:0 auto 0 0;width:240px;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:24px 14px 16px;z-index:20;overflow-y:auto}
+.rail .mark{padding:0 10px 20px}
+.ng{margin-top:18px}.ng-t{font-size:12.5px;font-weight:500;color:var(--mute);padding:0 10px 6px}
+.ni{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--ink-2);font:500 15px/1.2 var(--f);padding:10px;border-radius:var(--r-sm);cursor:pointer;text-align:left}
+.ni:hover{background:var(--raised);color:var(--ink)}
+.ni.on{background:var(--stencil-soft);color:var(--stencil);font-weight:600}
+.cnt{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--stencil);color:var(--stencil-ink);font-size:12px;font-weight:600;display:inline-grid;place-items:center}
+.rail-f{margin-top:auto;padding:16px 10px 0;font-size:13px;color:var(--mute);overflow-wrap:anywhere}
+main{margin-left:240px;padding:36px 44px 72px;max-width:1160px;min-width:0}
+.topbar,.tabbar,.btn.fab{display:none}
+
+/* ---- Cabeçalho da página ---- */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;margin-bottom:24px}
+.ph-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sec{margin-top:32px}.sec:first-child{margin-top:0}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+
+/* ---- Botões ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid transparent;background:var(--stencil);color:var(--stencil-ink);font:600 15px/1 var(--f);cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .15s,filter .15s}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:translateY(1px)}
+.btn svg.i{width:18px;height:18px}
+.btn.s{background:var(--surface);color:var(--ink);border-color:var(--line-2);font-weight:500}
+.btn.s:hover{background:var(--raised);filter:none}
+.btn.d,.btn.s.d{background:transparent;color:var(--bad);border-color:var(--line-2)}
+.btn.d:hover{background:var(--bad-soft);filter:none}
+.btn.sm{min-height:36px;padding:0 12px;font-size:14px;border-radius:9px}
+.btn[disabled]{opacity:.6;pointer-events:none}
+.ib{width:40px;height:40px;display:inline-grid;place-items:center;border-radius:10px;border:0;background:transparent;color:var(--ink-2);cursor:pointer;flex:none}
+.ib:hover{background:var(--raised);color:var(--ink)}
+.lnk{border:0;background:none;color:var(--stencil);font:600 14px var(--f);cursor:pointer;padding:8px 4px;text-decoration:none;white-space:nowrap}
+.lnk:hover{text-decoration:underline}
+
+/* ---- Campos ---- */
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;min-height:44px;width:100%;transition:border-color .15s,box-shadow .15s}
+textarea{min-height:88px;resize:vertical;line-height:1.45}
+input::placeholder,textarea::placeholder{color:var(--mute);opacity:.8}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--stencil);box-shadow:0 0 0 3px var(--stencil-soft)}
+select{appearance:none;-webkit-appearance:none;padding-right:38px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238a8499' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;min-height:0;margin:0;accent-color:var(--stencil);flex:none;cursor:pointer}
+input[type=file]{padding:8px;min-height:0}
+label{display:block;font-size:13.5px;font-weight:500;color:var(--ink-2);margin:16px 0 6px}
+label.ck{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:15px;font-weight:400;margin:14px 0 4px;cursor:pointer}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.f2>.full{grid-column:1/-1}
+.f3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px}
+.search{position:relative;flex:1;min-width:200px}.search svg.i{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--mute);pointer-events:none}.search input{padding-left:40px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.sel-sm{width:auto;min-width:170px}
+.mstep{display:inline-flex;align-items:center;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;height:44px;padding:0 2px}
+.mstep .ib{width:38px;height:38px}
+.mstep span{min-width:136px;text-align:center;font-weight:600;font-size:15px}
+.seg{display:inline-flex;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;font:500 14px var(--f);color:var(--ink-2);padding:8px 14px;border-radius:8px;cursor:pointer;min-height:36px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* ---- Listas ---- */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list>*+*{border-top:1px solid var(--line)}
+.day{padding:10px 16px 8px;font-size:13px;font-weight:600;color:var(--mute);background:var(--raised)}
+.day b{color:var(--ink);font-weight:600}
+.row{display:flex;align-items:center;gap:14px;padding:14px 16px;min-height:64px}
+.row[role=button]{cursor:pointer}.row[role=button]:hover{background:var(--raised)}
+.row[role=button]:focus-visible{outline-offset:-2px}
+.r-time{width:50px;flex:none;font-weight:600;font-size:15px;line-height:1.25;align-self:flex-start;padding-top:1px}
+.r-time small{display:block;color:var(--mute);font-weight:400;font-size:12.5px}
+.r-main{flex:1;min-width:0}
+.r-title{font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.r-title .plus{color:var(--mute);font-weight:400}
+.meta{display:flex;flex-wrap:wrap;gap:2px 14px;color:var(--mute);font-size:13.5px;margin-top:3px}
+.r-items{list-style:none;margin:8px 0 0;padding:0;font-size:13.5px;color:var(--ink-2)}
+.r-items li{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-top:1px dashed var(--line)}
+.r-items li:first-child{border-top:0}
+.r-end{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none;text-align:right}
+.money{font-weight:600;font-size:15px;white-space:nowrap}.r-end small{color:var(--mute);font-size:12.5px}
+.r-items li span:last-child{white-space:nowrap;flex:none}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--stencil-soft);color:var(--stencil);font-weight:600;font-size:14px;letter-spacing:.02em}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---- Status ---- */
+.bd{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;line-height:1;white-space:nowrap;padding:5px 9px 5px 8px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
+.bd::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.bd.p{background:var(--warn-soft);color:var(--warn)}.bd.x{background:var(--bad-soft);color:var(--bad)}.bd.c{background:var(--raised);color:var(--mute);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* ---- Resumo (números) ---- */
+.ledger{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.lc{padding:16px 18px;min-width:0}.lc+.lc{border-left:1px solid var(--line)}
+.lc .l{font-size:13.5px;color:var(--mute)}
+.lc .n{font-size:25px;font-weight:650;letter-spacing:-.015em;line-height:1.2;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc .x{font-size:13px;color:var(--mute);margin-top:2px}
+.ledger.v{grid-template-columns:1fr}.ledger.v .lc+.lc{border-left:0;border-top:1px solid var(--line)}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+
+/* ---- Painéis, avisos, vazio ---- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.panel+.panel{margin-top:16px}.panel>h2+.sub{margin-bottom:4px}
+.note{font-size:13.5px;line-height:1.5;background:var(--raised);border:1px solid var(--line);padding:10px 12px;border-radius:10px;color:var(--ink-2);margin-top:14px}
+.note.neg{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.note.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.empty{border:1.5px dashed var(--stencil-line);border-radius:var(--r);padding:28px 20px;text-align:center;color:var(--mute)}
+.empty .e-t{color:var(--ink);font-weight:600;font-size:16px;margin-bottom:4px}
+.empty .btn{margin-top:16px}
+details{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}
+summary{cursor:pointer;font-weight:500;color:var(--ink-2);min-height:32px;display:flex;align-items:center}
+textarea.big{min-height:180px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;word-break:break-all;color:var(--ink-2)}
+
+/* ---- Tatuagens dentro da sessão: contorno tracejado, como o decalque ---- */
+.tat{border:1.5px dashed var(--stencil-line);border-radius:var(--r);padding:12px 14px 16px;margin-top:12px;background:var(--raised)}
+.tath{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:36px}
+.tath b{font-weight:600}
+.tot{margin-left:auto;color:var(--ink-2);font-size:14px}.tot b{color:var(--ink)}
+
+/* ---- Diálogos ---- */
+.modal{position:fixed;inset:0;z-index:50;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:24px;animation:fade .15s ease-out}
+.dlg{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:min(90vh,860px);display:flex;flex-direction:column;border-radius:var(--r-lg);box-shadow:var(--shadow);animation:pop .18s ease-out}
+.dlg-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 12px 12px 22px;border-bottom:1px solid var(--line)}
+.dlg-b{padding:6px 22px 22px;overflow:auto;flex:1;overscroll-behavior:contain}
+.dlg-b>.sub:first-child{margin-top:14px}
+.dlg-f{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 22px calc(14px + var(--safe-b));border-top:1px solid var(--line)}
+.dlg-f .sp{flex:1}
+.ferr{width:100%;color:var(--bad);font-size:14px;font-weight:500}.ferr:empty{display:none}
+.sheet-nav{display:grid;gap:4px;padding-top:8px}
+@keyframes fade{from{opacity:0}}@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.985)}}@keyframes sheet{from{transform:translateY(100%)}}
+
+/* ---- Avisos flutuantes ---- */
+#toast{position:fixed;left:50%;bottom:calc(28px + var(--safe-b));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:10px;font-size:14px;font-weight:500;z-index:70;box-shadow:var(--shadow);max-width:calc(100vw - 32px);animation:pop .18s ease-out}
+#toast:empty{display:none}
+#sync{position:fixed;top:calc(16px + var(--safe-t));right:20px;z-index:60;font-size:13.5px;font-weight:500;padding:8px 12px;border-radius:10px;background:var(--surface);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--shadow)}
+#sync.err{background:var(--bad-soft);color:var(--bad);border-color:transparent;cursor:pointer}#sync.hide{display:none}
+
+/* ---- Telas de entrada ---- */
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.auth .panel{width:100%;max-width:440px;padding:28px}
+.auth .mark{display:block;margin-bottom:22px}
+
+/* ---- Início ---- */
+.dash{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,1fr);gap:32px;align-items:start}.dash>.sec{margin-top:0}
+.greet h1{font-size:30px}
+
+/* ---- Celular e tablet ---- */
+@media(max-width:899px){
+ .rail{display:none}
+ main{margin-left:0;padding:20px 16px calc(150px + var(--safe-b))}
+ .topbar{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:15;padding:calc(10px + var(--safe-t)) 16px 10px;background:var(--paper);border-bottom:1px solid var(--line)}
+ .topbar .mark{font-size:25px}
+ .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + var(--safe-b))}
+ .tb{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;color:var(--mute);font:500 12px/1 var(--f);min-height:54px;border-radius:12px;cursor:pointer}
+ .tb svg.i{width:22px;height:22px}
+ .tb.on{color:var(--stencil)}.tb.on svg.i{stroke-width:2.2}
+ .tb .cnt{position:absolute;top:4px;left:calc(50% + 6px);margin:0;min-width:18px;height:18px;font-size:11px}
+ .btn.ph-act{display:none}
+ .btn.fab{display:inline-flex;position:fixed;right:16px;bottom:calc(80px + var(--safe-b));z-index:18;min-height:52px;padding:0 20px;border-radius:16px;box-shadow:var(--shadow)}
+ .dash{grid-template-columns:1fr;gap:28px}
+ #sync{top:auto;bottom:calc(84px + var(--safe-b));right:auto;left:16px}
+ #toast{bottom:calc(88px + var(--safe-b))}
+}
+@media(max-width:640px){
+ h1,.greet h1{font-size:24px}
+ .ph{margin-bottom:18px}
+ .f2{grid-template-columns:1fr}.f2.keep{grid-template-columns:1fr 1fr}
+ .ledger{grid-template-columns:1fr 1fr}
+ .ledger .lc+.lc{border-left:0}
+ .ledger .lc:nth-child(even){border-left:1px solid var(--line)}
+ .ledger .lc:nth-child(n+3){border-top:1px solid var(--line)}
+ .ledger .lc:last-child:nth-child(odd){grid-column:1/-1}
+ .ledger.v{grid-template-columns:1fr 1fr}
+ .lc{padding:14px}.lc .n{font-size:21px}
+ .row{flex-wrap:wrap;padding:14px}
+ .row.wide .r-end{order:3;width:100%;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:6px 12px;padding-left:64px;text-align:left}
+ .row.wide .r-end small{flex-basis:100%}
+ .row.usr .acts{width:100%;padding-left:54px}
+ .row.cli{flex-wrap:nowrap;align-items:flex-start}.row.cli>.btn{align-self:center}
+ .mstep span{min-width:120px}
+ .modal{align-items:flex-end;padding:0}
+ .dlg{max-width:none;max-height:94vh;border-radius:var(--r-lg) var(--r-lg) 0 0;animation:sheet .24s cubic-bezier(.2,.8,.2,1)}
+ .dlg-h{padding-left:18px}.dlg-b{padding:4px 18px 20px}.dlg-f{padding-left:18px;padding-right:18px}
+ .dlg-f .btn{flex:1}.dlg-f .sp{display:none}
+ .search{min-width:100%}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
-<div id="auth"></div><div id="app" style="display:none"><nav id="nav"></nav><main id="main"></main></div><div id="mod"></div><div id="sync" class="hide"></div>
+<div id="auth"></div>
+<div id="app" style="display:none"><div class="topbar"><span class="mark">HelpInk</span></div><nav id="nav" aria-label="Menu principal"></nav><main id="main"></main></div>
+<div id="mod"></div><div id="sync" class="hide" role="status" aria-live="polite"></div><div id="toast" role="status" aria-live="polite"></div>
 <script>
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const R=n=>'R$ '+(+n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}; // data local (não UTC)
 const fd=d=>d?esc(String(d).split('-').reverse().join('/')):'';
 let badD=0;
 function toISO(s){s=s.trim();if(!s)return'';const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s);if(m){const d=new Date(m[3],m[2]-1,m[1]);if(d.getFullYear()==m[3]&&d.getMonth()==m[2]-1&&d.getDate()==m[1])return m[3]+'-'+m[2]+'-'+m[1]}badD=1;return''}
@@ -67,8 +240,55 @@ function mask(e){let v=e.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.sl
 function maskT(e){let v=e.value.replace(/\D/g,'').slice(0,4);if(v.length>2)v=v.slice(0,2)+':'+v.slice(2);e.value=v}
 function toT(s){s=s.trim();if(!s)return'';const m=/^(\d{1,2}):?(\d{2})$/.exec(s);if(m&&+m[1]<24&&+m[2]<60)return m[1].padStart(2,'0')+':'+m[2];badD=1;return''}
 let est='';const ESTILOS=['Realismo','Blackwork','Fineline','Old School (Tradicional)','Neotradicional','Aquarela','Geométrico','Pontilhismo (Dotwork)','Oriental / Irezumi','Tribal','Maori','Lettering','Minimalista','Biomecânico','Surrealismo','Trash Polka','Cobertura (Cover-up)','Retoque','Outro'];
-function filt(){return`<div style="display:flex;gap:8px;flex-wrap:wrap">${monthIn()}<select style="width:auto" onchange="est=this.value;render()"><option value="">Todos os estilos</option>${ESTILOS.map(e=>`<option ${e===est?'selected':''}>${e}</option>`).join('')}</select></div>`}
 const MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+/* ---- Componentes de interface ---- */
+const ICONS={home:'<path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.7-3.5 3.3-5.5 6.5-5.5s5.8 2 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14.8c2 .6 3.2 2.4 3.6 5.2"/>',
+ needle:'<path d="m14 4 6 6M16.5 6.5 8 15l-3 1 1-3 8.5-8.5M3.5 20.5 6 18"/><path d="m11.5 6.5 2 2"/>',
+ wallet:'<rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/><path d="M6 6V5a1 1 0 0 1 1.2-1l9 1.6"/>',
+ box:'<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
+ key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 8.5-8.5M16.5 6.5l2.5 2.5"/>',
+ sliders:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+ more:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+ doc:'<path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9.5 13h6M9.5 17h4"/>',
+ chevL:'<path d="m14.5 6-6 6 6 6"/>',chevR:'<path d="m9.5 6 6 6-6 6"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',
+ down:'<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>',
+ send:'<path d="M20.5 3.5 10 14M20.5 3.5 14 20.5l-4-6.5-6.5-4z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+ refresh:'<path d="M20 11a8 8 0 0 0-14.3-4.6L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.6L20 16M20 20v-4h-4"/>'};
+const ic=(n,cls)=>`<svg class="i ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const mt=(...p)=>`<div class="meta">${p.filter(Boolean).map(x=>`<span>${x}</span>`).join('')}</div>`;
+const ini=n=>String(n||'?').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';
+const av=n=>`<div class="av" aria-hidden="true">${esc(ini(n))}</div>`;
+const empty=(t,txt,act)=>`<div class="empty"><p class="e-t">${t}</p><p>${txt}</p>${act||''}</div>`;
+const ph=(title,sub,tools)=>`<header class="ph"><div class="${tab==='dash'?'greet':''}"><h1>${title}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>${tools?`<div class="ph-tools">${tools}</div>`:''}</header>`;
+const fab=(label,fn)=>`<button class="btn fab" onclick="${fn}">${ic('plus')}${label}</button>`;
+const ROLE='role="button" tabindex="0"';
+// Diálogo padrão: cabeçalho com fechar, corpo rolável e rodapé fixo (no celular vira folha que sobe de baixo)
+function dlg(title,body,foot,bk){
+ $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)bk()"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT"><div class="dlg-h"><h2 id="dlgT">${title}</h2><button class="ib" onclick="bk()" aria-label="Fechar">${ic('x')}</button></div><div class="dlg-b">${body}</div>${foot!=null?`<div class="dlg-f"><p class="ferr" id="ferr" role="alert"></p>${foot}</div>`:''}</div></div>`;
+ window.bk=bk||closeM;setTimeout(()=>{const f=$('#mod .dlg-b input:not([readonly]),#mod .dlg-b select,#mod .dlg-b textarea')||$('#mod .dlg .ib');if(f&&matchMedia('(min-width:641px)').matches)f.focus()},40)}
+const ferr=m=>{const e=$('#ferr');if(e){e.textContent=m;e.scrollIntoView({block:'nearest'})}else alert(m)};
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;clearTimeout(toastT);toastT=setTimeout(()=>t.textContent='',3200)}
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&$('#mod').innerHTML){e.preventDefault();(window.bk||closeM)()}
+ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[role=button]')&&e.target.tagName!=='BUTTON'){e.preventDefault();e.target.click()}});
+// Mês: "‹ novembro de 2026 ›"
+function mv(d){let[y,m]=per.split('-').map(Number);m+=d;if(m<1){m=12;y--}if(m>12){m=1;y++}per=y+'-'+String(m).padStart(2,'0');render()}
+const mLabel=p=>{const[y,m]=(p||per).split('-');return MES[+m-1].toLowerCase()+' de '+y};
+const monthIn=()=>`<div class="mstep"><button class="ib" onclick="mv(-1)" aria-label="Mês anterior">${ic('chevL')}</button><span aria-live="polite">${mLabel()}</span><button class="ib" onclick="mv(1)" aria-label="Próximo mês">${ic('chevR')}</button></div>${per!==today().slice(0,7)?'<button class="lnk" onclick="per=today().slice(0,7);render()">Mês atual</button>':''}`;
+const estSel=()=>`<select class="sel-sm" aria-label="Filtrar por estilo" onchange="est=this.value;render()"><option value="">Todos os estilos</option>${ESTILOS.map(e=>`<option ${e===est?'selected':''}>${e}</option>`).join('')}</select>`;
+const ledger=(cells,v)=>`<div class="ledger ${v?'v':''}" style="--n:${cells.length}">${cells.map(([l,n,x,cls])=>`<div class="lc"><div class="l">${l}</div><div class="n ${cls||''}">${n}</div>${x?`<div class="x">${x}</div>`:''}</div>`).join('')}</div>`;
+// Datas legíveis: "Hoje", "Amanhã", "sex., 14 de nov."
+function dayLbl(iso){const t=today(),dd=new Date(iso+'T12:00:00'),diff=Math.round((dd-new Date(t+'T12:00:00'))/864e5);
+ const f=dd.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+ return diff===0?`<b>Hoje</b>, ${f}`:diff===1?`<b>Amanhã</b>, ${f}`:diff===-1?`<b>Ontem</b>, ${f}`:f.charAt(0).toUpperCase()+f.slice(1)}
+const byDay=(l,fn)=>{let o='',d=null;for(const s of l){if(s.data!==d){d=s.data;o+=`<div class="day">${dayLbl(d)}</div>`}o+=fn(s)}return o};
+// Aparência: automático / claro / escuro
+function setTheme(t){try{t==='auto'?localStorage.removeItem('theme'):localStorage.setItem('theme',t)}catch(e){}
+ t==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.setAttribute('data-theme',t);if($('#app').style.display!=='none')render()}
+const curTheme=()=>{try{return localStorage.getItem('theme')||'auto'}catch(e){return'auto'}};
+if(curTheme()!=='auto')document.documentElement.setAttribute('data-theme',curTheme());
 const COLS=['clients','sessions','personal','stock','buys'];
 const blank=()=>({studio:'Meu Estúdio',clients:[],sessions:[],personal:[],stock:[],buys:[]});
 let db=blank(),tab='dash',per=today().slice(0,7),q='';
@@ -92,8 +312,8 @@ async function sync(){if(!user||!snap)return;const cur=snapshot(),ups=[],dels=[]
 function save(){pend++;showSync();queue=queue.then(sync).then(()=>{syncErr=null},e=>{console.error(e);syncErr=e}).then(()=>{pend--;showSync()});return queue}
 function showSync(){const e=$('#sync');if(!e)return;
  if(pend){e.className='';e.textContent='Salvando…';e.onclick=null}
- else if(syncErr&&syncErr.auth){e.className='err';e.textContent='⚠ Sessão expirada — toque para entrar de novo (a última alteração não foi salva)';e.onclick=()=>{syncErr=null;location.reload()}}
- else if(syncErr){e.className='err';e.textContent='⚠ Não foi possível salvar — toque para tentar de novo';e.onclick=()=>save()}
+ else if(syncErr&&syncErr.auth){e.className='err';e.textContent='Sua sessão expirou e a última alteração não foi salva. Toque para entrar de novo.';e.onclick=()=>{syncErr=null;location.reload()}}
+ else if(syncErr){e.className='err';e.textContent='Não foi possível salvar. Toque para tentar de novo.';e.onclick=()=>save()}
  else{e.className='hide';e.onclick=null}}
 addEventListener('beforeunload',e=>{if(pend||syncErr){e.preventDefault();e.returnValue=''}});
 async function loadDB(){const r=await api('/api/data'),rows=r.rows;
@@ -133,7 +353,7 @@ function clearLegacy(){try{localStorage.removeItem(CK)}catch(e){}
  try{for(let i=0;i<60;i++)document.cookie=`${CK}${i}=;max-age=0;path=/`;document.cookie=`${CK}n=;max-age=0;path=/`}catch(e){}}
 /* ---- Modal / formulário genérico ---- */
 function form(title,fields,v,ok,del){v=v||{};
- const h=fields.map(f=>{if(f.t==='note')return`<div class="note">${f.l}</div>`;
+ const h=fields.map(f=>{if(f.t==='note')return`<div class="note full">${f.l}</div>`;
   const val=v[f.k]!=null?v[f.k]:(f.d!=null?f.d:'');let i;
   if(f.t==='ck')return`<label class="ck"><input type="checkbox" id="f_${f.k}" ${v[f.k]?'checked':''}>${f.l}</label>`;
   if(f.t==='sel')i=`<select id="f_${f.k}">${f.o.map(o=>{const a=Array.isArray(o)?o:[o,o];return`<option value="${esc(a[0])}" ${a[0]==val?'selected':''}>${esc(a[1])}</option>`}).join('')}</select>`;
@@ -141,15 +361,14 @@ function form(title,fields,v,ok,del){v=v||{};
   else if(f.t==='time')i=`<input id="f_${f.k}" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(val)}">`;
   else if(f.t==='date')i=`<input id="f_${f.k}" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="mask(this)" value="${fd(val)}">`;
   else i=`<input id="f_${f.k}" type="${f.t||'text'}" ${f.t==='number'?'step="0.01" inputmode="decimal"':''} value="${esc(val)}">`;
-  return`<div style="${f.w?'':'grid-column:1/-1'}"><label>${f.l}</label>${i}</div>`}).join('');
- $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)bk()"><div><h2>${title}</h2><div class="f2">${h}</div>
- <div class="bar" style="margin:18px 0 0"><button class="btn" id="sv">Salvar</button><button class="btn s" onclick="closeM()">Cancelar</button>${del?'<button class="btn s d" id="dl">Excluir</button>':''}</div></div></div>`;
+  return`<div class="${f.w?'':'full'}"><label for="f_${f.k}">${f.l}${f.r?' *':''}</label>${i}</div>`}).join('');
+ dlg(title,`<div class="f2">${h}</div>`,`${del?'<button class="btn d" id="dl">Excluir</button>':''}<span class="sp"></span><button class="btn s" onclick="closeM()">Cancelar</button><button class="btn" id="sv">Salvar</button>`);
  $('#sv').onclick=()=>{badD=0;const o={};for(const f of fields){if(f.t==='note')continue;const e=$('#f_'+f.k);o[f.k]=f.t==='ck'?e.checked:f.t==='number'?(parseFloat(e.value)||0):f.t==='date'?toISO(e.value):f.t==='time'?toT(e.value):e.value.trim()}
-  if(badD){alert('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');return}
-  if(fields.some(f=>f.r&&!o[f.k])){alert('Preencha os campos obrigatórios.');return}ok(o);save();closeM();render()};
+  if(badD)return ferr('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');
+  const miss=fields.find(f=>f.r&&!o[f.k]);if(miss){$('#f_'+miss.k).focus();return ferr('Preencha: '+miss.l+'.')}ok(o);save();closeM();render()};
  const snap=()=>fields.map(f=>f.t==='note'?'':(f.t==='ck'?$('#f_'+f.k).checked:$('#f_'+f.k).value)).join('|'),s0=snap();
- window.bk=()=>snap()===s0?closeM():$('#sv').click();
- if(del)$('#dl').onclick=()=>{if(confirm('Excluir este registro?')){del();save();closeM();render()}}}
+ window.bk=()=>snap()===s0?closeM():(confirm('Descartar as alterações?')&&closeM());
+ if(del)$('#dl').onclick=()=>{if(confirm('Excluir este registro? Não dá para desfazer.')){del();save();closeM();render();toast('Registro excluído')}}}
 const closeM=()=>$('#mod').innerHTML='';
 /* ---- Dados auxiliares ---- */
 const cname=id=>(db.clients.find(c=>c.id===id)||{}).nome||'—';
@@ -172,47 +391,47 @@ function sessForm(title,s,ok,del){s=s||{};let items=tats(s).map(t=>({...t}));
  const v=(k,d)=>s[k]!=null&&s[k]!==''?s[k]:d;
  const sel=(id,opts,val)=>`<select id="${id}">${opts.map(o=>{const a=Array.isArray(o)?o:[o,o];return`<option value="${esc(a[0])}" ${a[0]==val?'selected':''}>${esc(a[1])}</option>`}).join('')}</select>`;
  const numIn=(id,val,step)=>`<input id="${id}" type="number" step="${step}" inputmode="decimal" value="${val?esc(val):''}">`;
- $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)bk()"><div><h2>${title}</h2>
- <div class="f2"><div style="grid-column:1/-1"><label>Cliente *</label>${sel('s_cid',[['','Selecione…'],...db.clients.map(c=>[c.id,c.nome])],v('cid',''))}</div>
- <div><label>Data *</label><input id="s_data" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="mask(this)" value="${fd(v('data',today()))}"></div>
- <div><label>Status</label>${sel('s_status',['Pendente','Confirmado','Concluído','Cancelado'],v('status','Pendente'))}</div>
- <div><label>Início</label><input id="s_hora" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(v('hora',''))}"></div>
- <div><label>Término</label><input id="s_fim" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(v('fim',''))}"></div></div>
- <h2 style="margin-top:20px">Tatuagens</h2><div id="tlist"></div>
- <div class="bar" style="margin:12px 0 0"><button class="btn s" id="tadd">+ Adicionar tatuagem</button><div class="sub" id="ttot" style="margin:0 0 0 auto"></div></div>
- <div class="f2"><div><label>Custo dos materiais da sessão (R$)</label>${numIn('s_material',v('material',''),'0.01')}</div>
- <div style="display:flex;align-items:flex-end"><label class="ck" style="margin:0 0 10px"><input type="checkbox" id="s_pago" ${s.pago?'checked':''}>Pagamento recebido</label></div>
- <div style="grid-column:1/-1"><label>Observações</label><textarea id="s_obs" rows="3">${esc(v('obs',''))}</textarea></div></div>
- <div class="bar" style="margin:18px 0 0"><button class="btn" id="sv">Salvar</button><button class="btn s" onclick="closeM()">Cancelar</button>${del?'<button class="btn s d" id="dl">Excluir</button>':''}</div></div></div>`;
+ dlg(title,`<div class="f2 keep"><div class="full"><label for="s_cid">Cliente *</label>${sel('s_cid',[['','Selecione o cliente'],...db.clients.map(c=>[c.id,c.nome])],v('cid',''))}</div>
+ <div><label for="s_data">Data *</label><input id="s_data" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="mask(this)" value="${fd(v('data',today()))}"></div>
+ <div><label for="s_status">Status</label>${sel('s_status',['Pendente','Confirmado','Concluído','Cancelado'],v('status','Pendente'))}</div>
+ <div><label for="s_hora">Início</label><input id="s_hora" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(v('hora',''))}"></div>
+ <div><label for="s_fim">Término</label><input id="s_fim" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" oninput="maskT(this)" value="${esc(v('fim',''))}"></div></div>
+ <div class="sec-h" style="margin:26px 0 0"><h3>Tatuagens desta sessão</h3><span class="tot" id="ttot"></span></div><div id="tlist"></div>
+ <button class="btn s" id="tadd" style="margin-top:12px;width:100%">${ic('plus')}Adicionar tatuagem</button>
+ <div class="f2" style="margin-top:8px"><div><label for="s_material">Custo dos materiais (R$)</label>${numIn('s_material',v('material',''),'0.01')}</div>
+ <div style="display:flex;align-items:flex-end"><label class="ck" style="margin:0 0 12px"><input type="checkbox" id="s_pago" ${s.pago?'checked':''}>Pagamento recebido</label></div>
+ <div class="full"><label for="s_obs">Observações</label><textarea id="s_obs" rows="3">${esc(v('obs',''))}</textarea></div></div>`,
+ `${del?'<button class="btn d" id="dl">Excluir</button>':''}<span class="sp"></span><button class="btn s" onclick="closeM()">Cancelar</button><button class="btn" id="sv">Salvar sessão</button>`);
  const read=()=>{items=items.map((t,i)=>({desc:$('#t_desc_'+i).value.trim(),estilo:$('#t_estilo_'+i).value,cm:parseFloat($('#t_cm_'+i).value)||0,cart:parseFloat($('#t_cart_'+i).value)||0,valor:parseFloat($('#t_valor_'+i).value)||0}));return items};
- const tot=()=>{const t=read(),n=t.length,val=t.reduce((a,x)=>a+x.valor,0);$('#ttot').innerHTML=`${n} ${n==1?'tatuagem':'tatuagens'} · total <b>${R(val)}</b>`};
- const draw=focus=>{$('#tlist').innerHTML=items.map((t,i)=>`<div class="tat"><div class="tath"><b>Tatuagem ${i+1}</b>${items.length>1?`<button class="btn s d" onclick="tatDel(${i})">Remover</button>`:''}</div>
-  <div class="f2"><div style="grid-column:1/-1"><label>Descrição *</label><input id="t_desc_${i}" maxlength="300" placeholder="Ex.: Rosa no antebraço" value="${esc(t.desc)}"></div>
-  <div style="grid-column:1/-1"><label>Estilo</label>${sel('t_estilo_'+i,[['','Selecione…'],...ESTILOS],t.estilo)}</div>
-  <div class="f3" style="grid-column:1/-1"><div><label>Tamanho (cm)</label>${numIn('t_cm_'+i,t.cm,'0.1')}</div><div><label>Cartuchos</label>${numIn('t_cart_'+i,t.cart,'1')}</div>
-  <div><label>Valor (R$)</label>${numIn('t_valor_'+i,t.valor,'0.01')}</div></div></div></div>`).join('');
+ const tot=()=>{const t=read(),n=t.length,val=t.reduce((a,x)=>a+x.valor,0);$('#ttot').innerHTML=`${n} ${n==1?'tatuagem':'tatuagens'}, total <b>${R(val)}</b>`};
+ const draw=focus=>{$('#tlist').innerHTML=items.map((t,i)=>`<div class="tat"><div class="tath"><b>Tatuagem ${i+1}</b>${items.length>1?`<button class="btn d sm" onclick="tatDel(${i})" aria-label="Remover tatuagem ${i+1}">Remover</button>`:''}</div>
+  <div class="f2"><div class="full"><label for="t_desc_${i}">Descrição *</label><input id="t_desc_${i}" maxlength="300" placeholder="Ex.: rosa no antebraço" value="${esc(t.desc)}"></div>
+  <div class="full"><label for="t_estilo_${i}">Estilo</label>${sel('t_estilo_'+i,[['','Selecione o estilo'],...ESTILOS],t.estilo)}</div>
+  <div class="f3 full"><div><label for="t_cm_${i}">Tamanho (cm)</label>${numIn('t_cm_'+i,t.cm,'0.1')}</div><div><label for="t_cart_${i}">Cartuchos</label>${numIn('t_cart_'+i,t.cart,'1')}</div>
+  <div><label for="t_valor_${i}">Valor (R$)</label>${numIn('t_valor_'+i,t.valor,'0.01')}</div></div></div></div>`).join('');
   for(let i=0;i<items.length;i++)$('#t_valor_'+i).oninput=tot;tot();
   if(focus!=null){const e=$('#t_desc_'+focus);e.scrollIntoView({block:'center',behavior:'smooth'});e.focus()}};
  window.tatDel=i=>{read();const t=items[i];if((t.desc||t.valor)&&!confirm('Remover a tatuagem '+(i+1)+(t.desc?' ('+t.desc+')':'')+'?'))return;items.splice(i,1);draw()};
  $('#tadd').onclick=()=>{read();items.push({desc:'',estilo:'',cm:0,cart:0,valor:0});draw(items.length-1)};
  draw();
  const all=()=>JSON.stringify([read(),...['s_cid','s_data','s_status','s_hora','s_fim','s_material','s_obs'].map(k=>$('#'+k).value),$('#s_pago').checked]),s0=all();
- window.bk=()=>all()===s0?closeM():$('#sv').click();
+ window.bk=()=>all()===s0?closeM():(confirm('Descartar as alterações desta sessão?')&&closeM());
  $('#sv').onclick=()=>{badD=0;const t=read().filter(x=>x.desc||x.estilo||x.cm||x.cart||x.valor);
   const o={cid:$('#s_cid').value,data:toISO($('#s_data').value),hora:toT($('#s_hora').value),fim:toT($('#s_fim').value),status:$('#s_status').value,material:parseFloat($('#s_material').value)||0,pago:$('#s_pago').checked,obs:$('#s_obs').value.trim()};
-  if(badD){alert('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');return}
-  if(!o.cid||!o.data){alert('Escolha o cliente e a data.');return}
-  if(!t.length){alert('Adicione pelo menos uma tatuagem.');return}
-  const sem=t.findIndex(x=>!x.desc);if(sem>=0){alert('Descreva a tatuagem '+(items.indexOf(t[sem])+1)+'.');return}
+  if(badD)return ferr('Data ou hora inválida. Use dd/mm/aaaa e hh:mm (24 horas).');
+  if(!o.cid){$('#s_cid').focus();return ferr('Escolha o cliente.')}
+  if(!o.data){$('#s_data').focus();return ferr('Informe a data da sessão.')}
+  if(!t.length){$('#t_desc_0').focus();return ferr('Descreva pelo menos uma tatuagem.')}
+  const sem=t.findIndex(x=>!x.desc);if(sem>=0){const k=items.indexOf(t[sem]);$('#t_desc_'+k).focus();return ferr('Descreva a tatuagem '+(k+1)+'.')}
   // campos resumidos na sessão (compatibilidade com backup e telas antigas)
   Object.assign(o,{tatuagens:t,valor:t.reduce((a,x)=>a+x.valor,0),desc:t.map(x=>x.desc).join(' + '),estilo:t[0].estilo,cm:t.reduce((a,x)=>a+x.cm,0),cart:t.reduce((a,x)=>a+x.cart,0)});
   ok(o);save();closeM();render()};
- if(del)$('#dl').onclick=()=>{if(confirm('Excluir esta sessão e todas as tatuagens dela?')){del();save();closeM();render()}}}
+ if(del)$('#dl').onclick=()=>{if(confirm('Excluir esta sessão e todas as tatuagens dela? Não dá para desfazer.')){del();save();closeM();render();toast('Sessão excluída')}}}
 const persF=[{k:'desc',l:'Descrição',r:1},{k:'cat',l:'Categoria',t:'sel',o:['Moradia','Alimentação','Transporte','Estúdio / aluguel','Impostos','Lazer','Outros'],w:1},{k:'data',l:'Data',t:'date',d:today(),w:1,r:1},{k:'valor',l:'Valor (R$)',t:'number',w:1,r:1}];
 const stockF=[{k:'nome',l:'Material',r:1},{k:'qtd',l:'Quantidade',t:'number',w:1},{k:'compra',l:'Dia da compra',t:'date',d:today(),w:1,r:1},{k:'fim',l:'Dia que acabou',t:'date',w:1}];
 const addC=()=>form('Novo cliente',clientF,{},o=>{const id=uid();db.clients.push({id,...o});setTimeout(()=>{if(confirm('Cliente cadastrado! Enviar agora a ficha de anamnese para ele preencher e assinar?'))novaFicha(id)},150)});
 const edC=id=>{const c=db.clients.find(x=>x.id===id);form('Cliente',clientF,c,o=>Object.assign(c,o),()=>db.clients=db.clients.filter(x=>x.id!==id))};
-const addS=cid=>db.clients.length?sessForm('Nova sessão',cid?{cid}:{},o=>db.sessions.push({id:uid(),...o})):(alert('Cadastre um cliente primeiro.'),go('cli'));
+const addS=cid=>db.clients.length?sessForm('Nova sessão',cid?{cid}:{},o=>db.sessions.push({id:uid(),...o})):(toast('Cadastre um cliente antes de marcar a sessão.'),go('cli'),addC());
 const edS=id=>{const s=db.sessions.find(x=>x.id===id);sessForm('Sessão',s,o=>Object.assign(s,o),()=>db.sessions=db.sessions.filter(x=>x.id!==id))};
 const addP=()=>form('Novo custo pessoal',persF,{},o=>db.personal.push({id:uid(),...o}));
 const edP=id=>{const s=db.personal.find(x=>x.id===id);form('Custo pessoal',persF,s,o=>Object.assign(s,o),()=>db.personal=db.personal.filter(x=>x.id!==id))};
@@ -221,160 +440,178 @@ const edK=id=>{const s=db.stock.find(x=>x.id===id);form('Material',stockF,s,o=>O
 const buy=id=>{const s=db.stock.find(x=>x.id===id);form('Compra: '+esc(s.nome),[{k:'qtd',l:'Quantidade comprada',t:'number',w:1,r:1},{k:'custo',l:'Custo unitário (R$)',t:'number',d:s.custo,w:1},{k:'data',l:'Data',t:'date',d:today()}],{},o=>{s.qtd=(+s.qtd||0)+o.qtd;s.custo=o.custo||s.custo;db.buys.push({id:uid(),sid:id,...o})})};
 const use=id=>{const s=db.stock.find(x=>x.id===id);form('Baixa: '+esc(s.nome),[{k:'qtd',l:'Quantidade usada',t:'number',r:1}],{},o=>s.qtd=Math.max(0,(+s.qtd||0)-o.qtd))};
 /* ---- Telas ---- */
-const NAV=[['dash','📊','Dashboard'],['cli','👥','Clientes'],['ses','🎨','Tatuagens'],['pes','💳','Pessoal'],['est','📦','Estoque'],['bkp','⚙️','Conta']];
-function go(t){tab=t;q='';render();window.scrollTo(0,0);if(t==='usr')loadUsers();if(t==='cli')loadFichas()}
+const NAVG=()=>[['Estúdio',[['dash','home','Início'],['cli','users','Clientes'],['ses','needle','Tatuagens']]],['Gestão',[['pes','wallet','Custos pessoais'],['est','box','Estoque']]],['Conta',[...(user&&user.admin?[['usr','key','Usuários']]:[]),['bkp','sliders','Conta e backup']]]];
+const TABS=[['dash','home','Início'],['cli','users','Clientes'],['ses','needle','Tatuagens']];
+function go(t){tab=t;q='';closeM();render();window.scrollTo(0,0);if(t==='usr')loadUsers();if(t==='cli')loadFichas()}
 const pendN=()=>Array.isArray(usrs)?usrs.filter(u=>u.status==='pending').length:0;
-const navL=()=>user&&user.admin?[...NAV.slice(0,5),['usr','🔑','Usuários'+(pendN()?' ('+pendN()+')':'')],NAV[5]]:NAV;
-const navH=()=>`<div class="logo"><b>H</b><span>HelpInk</span></div>`+navL().map(n=>`<button class="${tab===n[0]?'on':''}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join('');
+const cntB=k=>k==='usr'&&pendN()?`<span class="cnt" aria-label="${pendN()} pedidos aguardando">${pendN()}</span>`:'';
+function navH(){const more=!TABS.some(t=>t[0]===tab),cur=k=>tab===k?'aria-current="page"':'';
+ return`<div class="rail"><span class="mark">HelpInk</span>${NAVG().map(([g,items])=>`<div class="ng"><div class="ng-t">${g}</div>${items.map(([k,i,l])=>`<button class="ni ${tab===k?'on':''}" onclick="go('${k}')" ${cur(k)}>${ic(i)}<span>${l}</span>${cntB(k)}</button>`).join('')}</div>`).join('')}<div class="rail-f">${esc(db.studio)}<br>${esc(user&&user.email||'')}</div></div>
+ <div class="tabbar">${TABS.map(([k,i,l])=>`<button class="tb ${tab===k?'on':''}" onclick="go('${k}')" ${cur(k)}>${ic(i)}<span>${l}</span></button>`).join('')}<button class="tb ${more?'on':''}" onclick="maisM()" aria-haspopup="dialog">${ic('more')}<span>Mais</span>${pendN()?`<span class="cnt">${pendN()}</span>`:''}</button></div>`}
+function maisM(){dlg('Mais opções',`<div class="sheet-nav">${NAVG().slice(1).flatMap(g=>g[1]).map(([k,i,l])=>`<button class="ni ${tab===k?'on':''}" onclick="go('${k}')">${ic(i)}<span>${l}</span>${cntB(k)}</button>`).join('')}</div>`,null)}
 /* ---- Usuários (só administradores) ---- */
 let usrs=null;
 async function loadUsers(){try{usrs=(await api('/api/admin/users')).users}catch(e){usrs={err:e.message}}
  if($('#app').style.display==='none')return;if(tab==='usr')render();else $('#nav').innerHTML=navH()}
 const UST={pending:['Aguardando aprovação','p'],approved:['Aprovado',''],rejected:['Recusado','x']};
 function vUsr(){const l=Array.isArray(usrs)?usrs:[];
- const A=(i,a,t,c)=>`<button class="btn s ${c||''}" onclick="usrAct(${i},'${a}')">${t}</button>`;
- return`<header><div><h1>Usuários</h1><div class="sub">Quem pediu acesso e quem pode usar o HelpInk</div></div><button class="btn s" onclick="usrs=null;render();loadUsers()">↻ Atualizar</button></header>
- ${!usrs?'<div class="empty">Carregando…</div>':usrs.err?`<div class="note neg">${esc(usrs.err)}</div>`:''}
- ${l.map((u,i)=>{const s=UST[u.status]||[u.status,''];
-  return`<div class="row"><div class="m">${esc(u.nome||u.email)}${u.admin?' · administrador':''}<small>${esc(u.email)}${u.estudio?' · '+esc(u.estudio):''}${u.telefone?' · '+esc(u.telefone):''}</small><small>Pedido em ${fd((u.created_at||'').slice(0,10))} · ${u.clientes} clientes · ${u.sessoes} sessões</small></div><span class="bd ${s[1]}">${s[0]}</span>${u.admin?'':`<div class="acts">${u.status!=='approved'?A(i,'approve','Aprovar'):''}${u.status==='pending'?A(i,'reject','Recusar','d'):''}${u.status==='approved'?A(i,'reject','Bloquear','d'):''}${u.status==='rejected'?A(i,'remove','Remover','d'):''}</div>`}</div>`}).join('')||(Array.isArray(usrs)?'<div class="empty">Nenhum usuário ainda.</div>':'')}
- <div class="note">Cada pessoa que entra pelo Cloudflare Access ocupa uma das 50 vagas do plano gratuito, mesmo antes de ser aprovada. Para liberar vagas de quem foi recusado, remova a pessoa também em Cloudflare → Zero Trust → Users.</div>`}
+ const A=(i,a,t,c)=>`<button class="btn sm ${c}" onclick="usrAct(${i},'${a}')">${t}</button>`;
+ return ph('Usuários','Aprove quem pode usar o HelpInk. Cada tatuador vê apenas os próprios dados.',`<button class="btn s" onclick="usrs=null;render();loadUsers()">${ic('refresh')}Atualizar</button>`)+
+ (!usrs?'<p class="sub">Carregando…</p>':usrs.err?`<div class="note neg">${esc(usrs.err)}</div>`:'')+
+ (l.length?`<div class="list">${l.map((u,i)=>{const s=UST[u.status]||[u.status,'c'];
+  return`<div class="row usr">${av(u.nome||u.email)}<div class="r-main"><div class="r-title">${esc(u.nome||u.email)}${u.admin?' <span class="sub">(administrador)</span>':''}</div>${mt(esc(u.email),u.estudio&&esc(u.estudio),u.telefone&&esc(u.telefone))}${mt('Pedido em '+fd((u.created_at||'').slice(0,10)),u.clientes+' clientes',u.sessoes+' sessões')}</div><span class="bd ${s[1]}">${s[0]}</span>${u.admin?'':`<div class="acts">${u.status!=='approved'?A(i,'approve','Aprovar',''):''}${u.status==='pending'?A(i,'reject','Recusar','d'):''}${u.status==='approved'?A(i,'reject','Bloquear','d'):''}${u.status==='rejected'?A(i,'remove','Remover pedido','d'):''}</div>`}</div>`}).join('')}</div>`
+  :(Array.isArray(usrs)?empty('Nenhum pedido de acesso','Quando alguém entrar no HelpInk e pedir acesso, o pedido aparece aqui.'):''))+
+ `<div class="note">Cada pessoa que entra pelo login da Cloudflare ocupa uma das 50 vagas do plano gratuito, mesmo antes de ser aprovada. Para liberar a vaga de quem foi recusado, remova a pessoa também em Cloudflare → Zero Trust → Users.</div>`}
 async function usrAct(i,action){const u=usrs[i];if(!u)return;
- const msg={approve:'Aprovar o acesso de '+u.email+'?',reject:'Recusar/bloquear o acesso de '+u.email+'?',remove:'Remover o pedido de '+u.email+'? A pessoa poderá pedir acesso de novo. Os dados dela, se houver, são mantidos.'}[action];
- if(!confirm(msg))return;try{await api('/api/admin/users',{email:u.email,action});await loadUsers()}catch(e){alert(e.message)}}
-const monthIn=()=>{const[y,m]=per.split('-'),Y=new Date().getFullYear();let ys='';for(let i=Y-5;i<=Y+1;i++)ys+=`<option ${i==y?'selected':''}>${i}</option>`;
- return`<div class="bar" style="margin:0;gap:6px"><select style="width:auto" onchange="per=$('#pY').value+'-'+this.value;render()">${MES.map((n,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${v===m?'selected':''}>${n}</option>`}).join('')}</select><select id="pY" style="width:auto" onchange="per=this.value+'-${m}';render()">${ys}</select></div>`};
-const statBox=(i,top,n,l,cls)=>`<div class="card st"><div class="top"><div class="ic">${i}</div><em>${top}</em></div><div class="n ${cls||''}">${n}</div><div class="l">${l}</div></div>`;
+ const msg={approve:'Aprovar o acesso de '+u.email+'?',reject:'Recusar ou bloquear o acesso de '+u.email+'?',remove:'Remover o pedido de '+u.email+'? A pessoa poderá pedir acesso de novo. Os dados dela, se houver, são mantidos.'}[action];
+ if(!confirm(msg))return;try{await api('/api/admin/users',{email:u.email,action});await loadUsers();toast({approve:'Acesso aprovado',reject:'Acesso recusado',remove:'Pedido removido'}[action])}catch(e){toast(e.message)}}
+/* ---- Linhas de sessão ---- */
 function sessRow(s,full){const ts=tats(s),one=ts.length===1,val=ts.reduce((a,t)=>a+(+t.valor||0),0);
- return`<div class="row" onclick="edS('${s.id}')" style="cursor:pointer"><div class="t">${esc(s.hora)||'—'}<small>${full?fd(s.data):esc(s.fim)}</small></div><div class="m">${ts.map(t=>esc(t.desc)).join(' <span style="color:var(--mu)">+</span> ')}<small>${esc(cname(s.cid))}${one?(tatTxt(ts[0])?' · '+esc(tatTxt(ts[0])):''):' · '+ts.length+' tatuagens'}</small>${full&&!one?ts.map(t=>`<span class="tl">• ${esc(t.desc)}${tatTxt(t)?' — '+esc(tatTxt(t)):''} · ${R(t.valor)}</span>`).join(''):''}</div>${full?`<div class="v"><b>${R(val)}</b>material ${R(s.material)} · lucro ${R(val-(s.material||0))}${s.pago?' · pago':''}${dur(s)?' · ⏱ '+dur(s):''}</div>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span></div>`}
+ return`<div class="row ${full?'wide':''}" ${ROLE} onclick="edS('${s.id}')"><div class="r-time">${esc(s.hora)||'—'}${s.fim?`<small>${esc(s.fim)}</small>`:''}</div>
+ <div class="r-main"><div class="r-title">${ts.map(t=>esc(t.desc)).join(' <span class="plus">+</span> ')}</div>${mt(esc(cname(s.cid)),one?esc(tatTxt(ts[0])):ts.length+' tatuagens',full&&dur(s)?'Duração '+dur(s):'')}
+ ${full&&!one?`<ul class="r-items">${ts.map(t=>`<li><span>${esc(t.desc)}${tatTxt(t)?`, ${esc(tatTxt(t))}`:''}</span><span>${R(t.valor)}</span></li>`).join('')}</ul>`:''}</div>
+ <div class="r-end">${full?`<span class="money">${R(val)}</span>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span>${full?`<small>${s.pago?'Pago':'A receber'}${s.material?', material '+R(s.material):''}</small>`:''}</div></div>`}
 const dur=s=>{if(!s.hora||!s.fim)return'';const a=s.hora.split(':'),b=s.fim.split(':');let m=(b[0]*60+ +b[1])-(a[0]*60+ +a[1]);if(m<0)m+=1440;return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
 const sortS=l=>l.slice().sort((a,b)=>(a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
-function vDash(){const h=new Date().getHours(),g=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
- const ps=db.sessions.filter(s=>inP(s.data)&&live(s)&&temEst(s)),conf=ps.filter(s=>s.status==='Confirmado'||s.status==='Concluído').length;
+/* ---- Início ---- */
+function vDash(){const h=new Date().getHours(),g=h<5?'Boa noite':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+ const ps=db.sessions.filter(s=>inP(s.data)&&live(s)),conf=ps.filter(s=>s.status==='Confirmado'||s.status==='Concluído').length;
  const all=db.sessions.filter(live),saldo=sumS(all,'valor')-sumS(all,'material')-sumS(db.personal,'valor');
- 
- const ag=sortS(db.sessions.filter(s=>live(s)&&inP(s.data)&&s.data>=today()&&temEst(s))).slice(0,6);
- return`<header><div><h1>${g}, ${esc(db.studio)}! 👋</h1><div class="sub">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div></div>${filt()}</header>
- <div class="grid">${statBox('🎨',ps.length+(ps.length==1?' sessão':' sessões')+' · '+conf+' conf.',nT(ps),'Tatuagens no período')}${statBox('💲','No período',R(vT(ps)),'Faturamento')}${statBox('👥','Total',db.clients.length,'Clientes')}${statBox('📈',saldo>=0?'Positivo':'Negativo',R(saldo),'Saldo total',saldo>=0?'':'neg')}</div>
- 
- <div class="card"><div class="bar" style="justify-content:space-between;margin:0"><h2>Agenda do período</h2><a href="#" style="color:var(--gt);text-decoration:none" onclick="go('ses');return false">Ver tudo ›</a></div>
- ${ag.map(s=>sessRow(s)).join('')||'<div class="empty">Nenhuma sessão futura neste período.</div>'}</div>`}
-function vCli(){const l=db.clients.filter(c=>(c.nome+c.tel).toLowerCase().includes(q.toLowerCase()));
- return`<header><div><h1>Clientes</h1><div class="sub">Dados, ficha de anamnese e termo assinados pelo cliente</div></div></header>
- <div class="bar"><input placeholder="Buscar cliente…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addC()">+ Novo cliente</button></div>
- ${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s)),fs=fichaSt(c),nt=nTat(ss);return`<div class="row" style="cursor:pointer" onclick="edC('${c.id}')"><div class="m">${esc(c.nome)}<small>${esc(c.tel||'sem telefone')} · ${nt} ${nt==1?'tatuagem':'tatuagens'} em ${ss.length} ${ss.length==1?'sessão':'sessões'} · ${R(sumS(ss,'valor'))}</small></div><span class="bd ${fs[1]}">${fs[0]}</span><button class="btn s" onclick="event.stopPropagation();fichaM('${c.id}')">📝 Ficha</button></div>`}).join('')||'<div class="empty">Nenhum cliente encontrado.</div>'}`}
+ const prox=sortS(db.sessions.filter(s=>live(s)&&s.data>=today()&&s.status!=='Concluído')).slice(0,8);
+ const dt=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}),nt=nTat(ps);
+ return ph(`${g}, ${esc(db.studio)}`,dt.charAt(0).toUpperCase()+dt.slice(1))+
+ `<div class="dash"><section class="sec"><div class="sec-h"><h2>Próximas sessões</h2><button class="lnk" onclick="go('ses')">Ver todas</button></div>
+ ${prox.length?`<div class="list">${byDay(prox,s=>sessRow(s))}</div>`:empty('Nenhuma sessão marcada','Agende a próxima para ela aparecer aqui.',`<button class="btn" onclick="addS()">${ic('plus')}Nova sessão</button>`)}</section>
+ <section class="sec"><div class="sec-h"><h2>Resumo do mês</h2></div><div class="toolbar">${monthIn()}</div>
+ ${ledger([['Tatuagens',nt,`em ${ps.length} ${ps.length==1?'sessão':'sessões'}, ${conf} ${conf==1?'confirmada':'confirmadas'}`],['Faturamento',R(sumS(ps,'valor')),'A receber: '+R(sumS(ps.filter(s=>!s.pago),'valor'))],['Clientes',db.clients.length,'cadastrados no total'],['Saldo geral',R(saldo),'Faturado menos materiais e custos pessoais',saldo<0?'neg':'']],1)}</section></div>`+fab('Nova sessão','addS()')}
+/* ---- Clientes ---- */
+const searchIn=(ph_)=>`<div class="search">${ic('search')}<input type="search" placeholder="${ph_}" aria-label="${ph_}" value="${esc(q)}" oninput="q=this.value;const p=this.selectionStart;render();const e=$('.search input');e.focus();e.setSelectionRange(p,p)"></div>`;
+function vCli(){const l=db.clients.filter(c=>(c.nome+' '+(c.tel||'')).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR'));
+ return ph('Clientes','Cadastro, histórico e ficha de anamnese assinada pelo cliente.')+
+ (db.clients.length?`<div class="toolbar">${searchIn('Buscar por nome ou telefone')}</div>`:'')+
+ (l.length?`<div class="list">${l.map(c=>{const ss=db.sessions.filter(s=>s.cid===c.id&&live(s)),fs=fichaSt(c),nt=nTat(ss);
+  return`<div class="row cli" ${ROLE} onclick="edC('${c.id}')">${av(c.nome)}<div class="r-main"><div class="r-title">${esc(c.nome)}</div>${mt(c.tel?esc(c.tel):'Sem telefone',nt?`${nt} ${nt==1?'tatuagem':'tatuagens'}`:'Nenhuma tatuagem ainda',nt?R(sumS(ss,'valor')):'')}<div style="margin-top:8px"><span class="bd ${fs[1]}">${fs[0]}</span></div></div><button class="btn s sm" onclick="event.stopPropagation();fichaM('${c.id}')" aria-label="Ficha de anamnese de ${esc(c.nome)}">${ic('doc')}Ficha</button></div>`}).join('')}</div>`
+  :db.clients.length?empty('Nenhum cliente encontrado','Confira a grafia ou busque pelo telefone.'):empty('Nenhum cliente ainda','Cadastre o primeiro cliente para marcar sessões e enviar a ficha de anamnese.',`<button class="btn" onclick="addC()">${ic('plus')}Novo cliente</button>`))+fab('Novo cliente','addC()')}
 /* ---- Ficha de anamnese (o cliente preenche e assina pelo link) ---- */
 let fichas=null;
-async function loadFichas(){try{fichas=(await api('/api/forms')).forms}catch(e){console.error(e);if(!fichas)fichas=[]}if(tab==='cli'&&$('#app').style.display!=='none')render()}
+async function loadFichas(){try{fichas=(await api('/api/forms')).forms}catch(e){console.error(e);if(!fichas)fichas=[]}if(tab==='cli'&&$('#app').style.display!=='none'&&!$('#mod').innerHTML)render()}
 const fichasDe=cid=>(Array.isArray(fichas)?fichas:[]).filter(f=>f.client_id===cid);
 const vence=f=>f.status==='pending'&&f.expires_at<new Date().toISOString();
 const dth=s=>s?esc(new Date(s).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})):'';
 function fichaSt(c){const l=fichasDe(c.id),s=l.find(f=>f.status==='signed'),p=l.find(f=>f.status==='pending'&&!vence(f));
  if(s)return['Ficha assinada em '+dth(s.signed_at).slice(0,10),''];if(p)return[p.opened_at?'Ficha aberta pelo cliente':'Ficha enviada','p'];
- if(c.aceite)return['Termo manual (antigo)','c'];return[fichas?'Sem ficha':'…','p']}
+ if(c.aceite)return['Termo manual (antigo)','c'];return[fichas?'Sem ficha':'Carregando…','c']}
 function fichaM(cid){const c=db.clients.find(x=>x.id===cid);if(!c)return;const l=fichasDe(cid);
- const st=f=>f.status==='signed'?['Assinada',''] :f.status==='cancelled'?['Cancelada','c']:vence(f)?['Link expirado','x']:f.opened_at?['Aberta pelo cliente','p']:['Aguardando cliente','p'];
- $('#mod').innerHTML=`<div class="modal" onclick="if(event.target===this)closeM()"><div><h2>Ficha de ${esc(c.nome)}</h2>
- <div class="sub">O cliente recebe um link, preenche a anamnese e assina o termo. O documento assinado não pode ser alterado.</div>
- <div class="bar" style="margin:16px 0 4px"><button class="btn" onclick="novaFicha('${cid}')">+ Enviar nova ficha</button><button class="btn s" onclick="closeM()">Fechar</button></div>
- ${l.map(f=>{const s=st(f);return`<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Ficha ${esc(f.id.slice(0,6))}</b><span class="bd ${s[1]}">${s[0]}</span></div>
-  <small style="color:var(--mu);display:block;margin-top:4px">Enviada em ${dth(f.created_at)}${f.status==='pending'?' · válida até '+dth(f.expires_at):''}${f.opened_at?' · aberta em '+dth(f.opened_at):''}${f.signed_at?' · assinada em '+dth(f.signed_at):''}</small>
-  ${f.doc_hash?`<small style="color:var(--mu);display:block;word-break:break-all">SHA-256: ${esc(f.doc_hash)}</small>`:''}
-  <div class="acts" style="margin-top:8px;flex-wrap:wrap">${f.status==='signed'?`<button class="btn s" onclick="baixarFicha('${f.id}')">⬇ Documento</button>${f.has_ots?`<button class="btn s" onclick="baixarFicha('${f.id}',1)">⬇ Carimbo do tempo</button>`:''}<button class="btn s" onclick="usarDados('${f.id}','${cid}')">Usar dados no cadastro</button>`
-   :f.status==='pending'?`<button class="btn s" onclick="relink('${f.id}','${cid}')">🔗 Gerar novo link</button><button class="btn s d" onclick="cancelaFicha('${f.id}','${cid}')">Cancelar</button>`:''}</div></div>`}).join('')||'<div class="empty">Nenhuma ficha enviada ainda.</div>'}
- </div></div>`}
-async function novaFicha(cid){await queue;if(syncErr){alert('Salve os dados primeiro: há alterações não salvas.');return}
- try{const r=await api('/api/forms',{action:'create',client_id:cid});await loadFichas();linkM(cid,r)}catch(e){alert(e.message)}}
-async function relink(id,cid){if(!confirm('Gerar um novo link? O link anterior deixará de funcionar.'))return;
- try{const r=await api('/api/forms',{action:'relink',id});await loadFichas();linkM(cid,r)}catch(e){alert(e.message)}}
-async function cancelaFicha(id,cid){if(!confirm('Cancelar esta ficha? O link deixará de funcionar.'))return;
- try{await api('/api/forms',{action:'cancel',id});await loadFichas();fichaM(cid)}catch(e){alert(e.message)}}
+ const st=f=>f.status==='signed'?['Assinada','']:f.status==='cancelled'?['Cancelada','c']:vence(f)?['Link expirado','x']:f.opened_at?['Aberta pelo cliente','p']:['Aguardando o cliente','p'];
+ dlg('Ficha de '+esc(c.nome),`<p class="sub">O cliente recebe um link pessoal, preenche a ficha de saúde e assina o termo. Depois de assinada, a ficha não pode ser alterada.</p>
+ ${l.length?`<div class="list" style="margin-top:16px">${l.map(f=>{const s=st(f);return`<div class="row" style="display:block"><div class="tath"><b>Enviada em ${dth(f.created_at)}</b><span class="bd ${s[1]}">${s[0]}</span></div>
+  ${mt(f.status==='pending'?'Válida até '+dth(f.expires_at):'',f.opened_at?'Aberta em '+dth(f.opened_at):'',f.signed_at?'Assinada em '+dth(f.signed_at):'')}
+  ${f.doc_hash?`<p style="margin-top:8px"><code>SHA-256 ${esc(f.doc_hash)}</code></p>`:''}
+  <div class="acts" style="margin-top:12px">${f.status==='signed'?`<button class="btn s sm" onclick="baixarFicha('${f.id}')">${ic('down')}Documento</button>${f.has_ots?`<button class="btn s sm" onclick="baixarFicha('${f.id}',1)">${ic('down')}Carimbo do tempo</button>`:''}<button class="btn s sm" onclick="usarDados('${f.id}','${cid}')">Usar dados no cadastro</button>`
+   :f.status==='pending'?`<button class="btn s sm" onclick="relink('${f.id}','${cid}')">${ic('link')}Gerar novo link</button><button class="btn d sm" onclick="cancelaFicha('${f.id}','${cid}')">Cancelar ficha</button>`:''}</div></div>`}).join('')}</div>`
+  :`<div style="margin-top:16px">${empty('Nenhuma ficha enviada','Envie o link para o cliente preencher antes da sessão.')}</div>`}`,
+ `<span class="sp"></span><button class="btn s" onclick="closeM()">Fechar</button><button class="btn" onclick="novaFicha('${cid}')">${ic('send')}Enviar nova ficha</button>`)}
+async function novaFicha(cid){await queue;if(syncErr){toast('Há alterações não salvas. Aguarde salvar e tente de novo.');return}
+ try{const r=await api('/api/forms',{action:'create',client_id:cid});await loadFichas();linkM(cid,r)}catch(e){ferr(e.message)}}
+async function relink(id,cid){if(!confirm('Gerar um novo link? O link anterior deixa de funcionar.'))return;
+ try{const r=await api('/api/forms',{action:'relink',id});await loadFichas();linkM(cid,r)}catch(e){ferr(e.message)}}
+async function cancelaFicha(id,cid){if(!confirm('Cancelar esta ficha? O link deixa de funcionar.'))return;
+ try{await api('/api/forms',{action:'cancel',id});await loadFichas();fichaM(cid);toast('Ficha cancelada')}catch(e){ferr(e.message)}}
 function linkM(cid,r){const c=db.clients.find(x=>x.id===cid)||{},link=location.origin+'/assinar/#'+r.token;
  const msgW=`Olá${c.nome?', '+c.nome.split(' ')[0]:''}! Antes da sua sessão no ${db.studio}, preencha sua ficha de saúde e assine o termo de consentimento por este link (válido até ${new Date(r.expires_at).toLocaleDateString('pt-BR')}): ${link}`;
  let tel=String(c.tel||'').replace(/\D/g,'');if(tel.length===10||tel.length===11)tel='55'+tel;
  window._lk={link,msgW};
- $('#mod').innerHTML=`<div class="modal"><div><h2>Link da ficha pronto ✅</h2>
- <div class="sub">Envie este link para ${esc(c.nome||'o cliente')}. Ele é pessoal, vale até ${dth(r.expires_at)} e só aparece agora: se perder, gere um novo.</div>
- <label>Link</label><input id="lk" readonly onfocus="this.select()" value="${esc(link)}">
- <div class="bar" style="margin:16px 0 0">${tel?`<button class="btn" onclick="window.open('https://wa.me/${tel}?text='+encodeURIComponent(_lk.msgW),'_blank')">Enviar pelo WhatsApp</button>`:''}<button class="btn s" onclick="cpLink()">Copiar mensagem</button><button class="btn s" onclick="fichaM('${cid}')">Concluir</button></div>
- ${tel?'':'<div class="note">Cadastre o telefone do cliente para enviar direto pelo WhatsApp.</div>'}</div></div>`}
-function cpLink(){const t=_lk.msgW;try{navigator.clipboard.writeText(t).then(()=>alert('Mensagem com o link copiada!'),()=>{$('#lk').select();document.execCommand('copy')})}catch(e){$('#lk').select();document.execCommand('copy')}}
+ dlg('Link da ficha pronto',`<p class="sub">Envie para ${esc(c.nome||'o cliente')}. O link é pessoal e vale até ${dth(r.expires_at)}. Ele só aparece agora: se perder, gere um novo.</p>
+ <label for="lk">Link</label><input id="lk" readonly onfocus="this.select()" value="${esc(link)}">
+ ${tel?'':'<div class="note">Cadastre o telefone do cliente para enviar direto pelo WhatsApp.</div>'}`,
+ `<button class="btn s" onclick="fichaM('${cid}')">Concluir</button><span class="sp"></span><button class="btn s" onclick="cpLink()">${ic('copy')}Copiar mensagem</button>${tel?`<button class="btn" onclick="window.open('https://wa.me/${tel}?text='+encodeURIComponent(_lk.msgW),'_blank')">${ic('send')}Enviar pelo WhatsApp</button>`:''}`,()=>fichaM(cid))}
+function cpLink(){const t=_lk.msgW;const fb=()=>{$('#lk').select();document.execCommand('copy');toast('Link copiado')};
+ try{navigator.clipboard.writeText(t).then(()=>toast('Mensagem com o link copiada'),fb)}catch(e){fb()}}
 async function hashHex(s){const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));return[...d].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function baixarFicha(id,ots){try{const r=await api('/api/forms/doc?id='+encodeURIComponent(id));
  const nome=((r.answers&&r.answers.nome)||'cliente').normalize('NFD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').toLowerCase();
  const base='ficha-'+nome+'-'+r.signed_at.slice(0,10);let blob,fn;
  if(ots){const b=atob(r.ots),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);blob=new Blob([u],{type:'application/octet-stream'});fn=base+'.html.ots'}
- else{if(await hashHex(r.doc)!==r.doc_hash){alert('Atenção: o documento não confere com o código registrado na assinatura.');return}blob=new Blob([r.doc],{type:'text/html;charset=utf-8'});fn=base+'.html'}
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove()}catch(e){alert(e.message)}}
+ else{if(await hashHex(r.doc)!==r.doc_hash)return ferr('Atenção: o documento não confere com o código registrado na assinatura.');blob=new Blob([r.doc],{type:'text/html;charset=utf-8'});fn=base+'.html'}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();toast(ots?'Carimbo do tempo baixado':'Documento conferido e baixado')}catch(e){ferr(e.message)}}
 async function usarDados(id,cid){try{const r=await api('/api/forms/doc?id='+encodeURIComponent(id)),a=r.answers||{},c=db.clients.find(x=>x.id===cid);if(!c)return;
  const cpf=String(a.cpf||'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
  if(!confirm(`Atualizar o cadastro com os dados da ficha?\n\nNome: ${a.nome}\nCPF: ${cpf}\nNascimento: ${String(a.nasc).split('-').reverse().join('/')}${a.tel?'\nTelefone: '+a.tel:''}${a.email?'\nE-mail: '+a.email:''}`))return;
- Object.assign(c,{nome:a.nome,doc:cpf,nasc:a.nasc},a.tel?{tel:a.tel}:{},a.email?{email:a.email}:{});save();render();fichaM(cid)}catch(e){alert(e.message)}}
+ Object.assign(c,{nome:a.nome,doc:cpf,nasc:a.nasc},a.tel?{tel:a.tel}:{},a.email?{email:a.email}:{});save();render();fichaM(cid);toast('Cadastro atualizado com os dados da ficha')}catch(e){ferr(e.message)}}
+/* ---- Tatuagens (sessões do mês) ---- */
 function vSes(){const l=sortS(db.sessions.filter(s=>inP(s.data)&&temEst(s))).reverse(),a=l.filter(live),f=vT(a),m=sumS(a,'material'),n=nT(a);
- return`<header><div><h1>Tatuagens e financeiro</h1><div class="sub">Quanto cobrou, quanto gastou de material e o lucro</div></div>${filt()}</header>
- <div class="grid">${statBox('💲',n+(n==1?' tatuagem':' tatuagens'),'R$ '+f.toLocaleString('pt-BR'),'Faturado')}${statBox('🧪','','R$ '+m.toLocaleString('pt-BR'),'Materiais')}${statBox('📈','','R$ '+(f-m).toLocaleString('pt-BR'),'Lucro das tatuagens',f-m<0?'neg':'')}${statBox('⏳','',R(vT(a.filter(s=>!s.pago))),'A receber')}</div>
- <div class="bar"><button class="btn" onclick="addS()">+ Nova sessão</button></div>${l.map(s=>sessRow(s,1)).join('')||'<div class="empty">Sem sessões neste mês.</div>'}`}
+ return ph('Tatuagens','Sessões do mês com valores, materiais e lucro.',monthIn()+estSel())+
+ ledger([['Faturado',R(f),`${n} ${n==1?'tatuagem':'tatuagens'}${est?' de '+esc(est):''}`],['Materiais',R(m)],['Lucro',R(f-m),'',f-m<0?'neg':''],['A receber',R(vT(a.filter(s=>!s.pago)))]])+
+ `<div class="sec">${l.length?`<div class="list">${byDay(l,s=>sessRow(s,1))}</div>`:empty(est?`Nenhuma tatuagem de ${esc(est)} em ${mLabel()}`:`Nenhuma sessão em ${mLabel()}`,'Marque uma sessão ou escolha outro mês.',`<button class="btn" onclick="addS()">${ic('plus')}Nova sessão</button>`)}</div>`+fab('Nova sessão','addS()')}
+/* ---- Custos pessoais ---- */
 function vPes(){const l=db.personal.filter(p=>inP(p.data)).sort((a,b)=>b.data.localeCompare(a.data)),t=sumS(l,'valor');
- return`<header><div><h1>Custos pessoais</h1><div class="sub">Contas e gastos fora das tatuagens</div></div>${monthIn()}</header>
- <div class="grid">${statBox('💳','no mês',R(t),'Total de custos pessoais')}</div><div class="bar"><button class="btn" onclick="addP()">+ Novo custo</button></div>
- ${l.map(p=>`<div class="row" style="cursor:pointer" onclick="edP('${p.id}')"><div class="t">${fd(p.data).slice(0,5)}</div><div class="m">${esc(p.desc)}<small>${esc(p.cat)}</small></div><div class="v"><b>${R(p.valor)}</b></div></div>`).join('')||'<div class="empty">Sem custos neste mês.</div>'}`}
-function vEst(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLowerCase())),tv=db.stock.reduce((a,s)=>a+s.qtd*s.custo,0),bp=db.buys.filter(b=>inP(b.data)).reduce((a,b)=>a+b.qtd*b.custo,0);
- return`<header><div><h1>Estoque</h1><div class="sub">Materiais, custos e compras</div></div>${monthIn()}</header>
- <div class="grid">${statBox('📦','',db.stock.length,'Itens cadastrados')}${statBox('💰','',R(tv),'Valor em estoque')}${statBox('🛒','no período',R(bp),'Compras')}</div>
- <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
- ${l.map(s=>{const lo=s.min>0&&s.qtd<=s.min;return`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${esc(s.cat)} · ${R(s.custo)} / ${esc(s.un)}</small></div><span class="bd ${lo?'x':''}">${esc(s.qtd)} ${esc(s.un)}</span><div class="acts"><button class="btn s" onclick="buy('${s.id}')">+ Compra</button><button class="btn s" onclick="use('${s.id}')">− Baixa</button></div></div>`}).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
+ return ph('Custos pessoais','Contas e gastos fora das tatuagens. Entram no saldo geral do Início.',monthIn())+
+ ledger([['Total no mês',R(t)],['Lançamentos',l.length]])+
+ `<div class="sec">${l.length?`<div class="list">${l.map(p=>`<div class="row" ${ROLE} onclick="edP('${p.id}')"><div class="r-time">${fd(p.data).slice(0,5)}</div><div class="r-main"><div class="r-title">${esc(p.desc)}</div>${mt(esc(p.cat))}</div><div class="r-end"><span class="money">${R(p.valor)}</span></div></div>`).join('')}</div>`
+  :empty(`Nenhum custo em ${mLabel()}`,'Registre aluguel, contas e outros gastos para acompanhar o saldo.',`<button class="btn" onclick="addP()">${ic('plus')}Novo custo</button>`)}</div>`+fab('Novo custo','addP()')}
+/* ---- Conta e backup ---- */
 function toMD(){const T=(h,rows)=>rows.length?`| ${h.join(' | ')} |\n|${h.map(()=>'---').join('|')}|\n${rows.map(r=>'| '+r.map(x=>String(x==null?'':x).replace(/\|/g,'/')).join(' | ')+' |').join('\n')}\n`:'_Sem registros._\n';
  return`# HelpInk — Backup de ${db.studio}\nGerado em ${new Date().toLocaleString('pt-BR')}\n\n## Clientes\n${T(['Nome','Telefone','E-mail','Termo aceito'],db.clients.map(c=>[c.nome,c.tel,c.email,c.aceite?'Sim '+fd(c.aceiteData):'Não']))}\n## Tatuagens\n${T(['Data','Cliente','Serviço','Estilo','Tamanho (cm)','Cartuchos','Duração','Valor','Material','Status','Pago'],db.sessions.flatMap(s=>tats(s).map((t,i)=>[fd(s.data),cname(s.cid),t.desc,t.estilo,t.cm,t.cart,i?'':dur(s),t.valor,i?'':s.material,s.status,s.pago?'Sim':'Não'])))}\n## Custos pessoais\n${T(['Data','Descrição','Categoria','Valor'],db.personal.map(p=>[fd(p.data),p.desc,p.cat,p.valor]))}\n## Estoque\n${T(['Material','Qtd','Comprado em','Acabou em'],db.stock.map(s=>[s.nome,s.qtd,fd(s.compra),s.fim?fd(s.fim):'Em uso']))}\n## Dados para importação (não edite)\n\`\`\`json\n${JSON.stringify(db)}\n\`\`\`\n`}
-function vBkp(){return`<header><div><h1>Conta e backup</h1><div class="sub">Seus dados ficam salvos na nuvem, na sua conta</div></div></header>
- <div class="card" style="margin-bottom:14px"><h2>Sua conta</h2><div class="bar" style="margin:10px 0 0;justify-content:space-between"><div class="sub" style="margin:0">Conectado como <b>${esc(user&&user.email)}</b></div><button class="btn s d" onclick="sair()">Sair</button></div></div>
- <div class="card"><label>Nome do estúdio</label><input value="${esc(db.studio)}" onchange="db.studio=this.value||'Meu Estúdio';db.named=!!this.value;save()">
- <h2 style="margin-top:22px">Exportar para .md</h2><div class="bar" style="margin-top:10px"><button class="btn" onclick="dl()">⬇ Baixar arquivo .md</button><button class="btn s" onclick="cp()">Copiar texto</button></div>
- <div class="sub">Se o download for bloqueado pelo navegador, copie o texto abaixo e salve num arquivo .md.</div><textarea class="big" id="out" readonly onfocus="this.select()" style="margin-top:10px">${esc(toMD())}</textarea>
- <h2 style="margin-top:22px">Importar de outro computador</h2><div class="bar" style="margin-top:10px"><input type="file" accept=".md,.txt" onchange="rd(this.files[0])"></div>
- <textarea class="big" id="inp" placeholder="…ou cole aqui o conteúdo do arquivo .md"></textarea><div class="bar" style="margin-top:10px"><button class="btn" onclick="imp($('#inp').value)">Importar (substitui os dados atuais)</button></div></div>`}
-function dl(){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([toMD()],{type:'text/markdown'}));a.download='helpink-backup-'+today()+'.md';document.body.appendChild(a);a.click();a.remove()}catch(e){alert('Download bloqueado. Use "Copiar texto".')}}
-function cp(){const t=$('#out');t.select();try{navigator.clipboard.writeText(t.value).then(()=>alert('Copiado!'),()=>document.execCommand('copy'))}catch(e){document.execCommand('copy')}}
+function vBkp(){const th=curTheme();
+ return ph('Conta e backup','Seus dados ficam salvos na nuvem, na sua conta.')+
+ `<div class="panel"><h2>Sua conta</h2><div class="sec-h" style="margin:12px 0 0"><p>Conectado como <b>${esc(user&&user.email)}</b></p><button class="btn d sm" onclick="sair()">Sair</button></div></div>
+ <div class="panel"><h2>Estúdio</h2><label for="stn">Nome do estúdio</label><input id="stn" value="${esc(db.studio)}" maxlength="40" onchange="db.studio=this.value.trim()||'Meu Estúdio';db.named=!!this.value.trim();save();render();toast('Nome do estúdio salvo')">
+ <p class="sub">Aparece no Início e na mensagem enviada com a ficha de anamnese.</p></div>
+ <div class="panel"><h2>Aparência</h2><p class="sub">Tema deste aparelho. No automático, segue a configuração do sistema.</p><div class="seg" role="group" aria-label="Tema" style="margin-top:12px">${[['auto','Automático'],['light','Claro'],['dark','Escuro']].map(([k,l])=>`<button class="${th===k?'on':''}" aria-pressed="${th===k}" onclick="setTheme('${k}')">${l}</button>`).join('')}</div></div>
+ <div class="panel"><h2>Backup</h2><p class="sub">Baixe uma cópia de todos os dados num arquivo .md, que abre em qualquer editor de texto.</p>
+ <div class="acts" style="margin-top:14px"><button class="btn" onclick="dl()">${ic('down')}Baixar backup</button><button class="btn s" onclick="cp()">${ic('copy')}Copiar texto</button></div>
+ <details><summary>Ver o conteúdo do backup</summary><textarea class="big" id="out" readonly onfocus="this.select()" style="margin-top:10px">${esc(toMD())}</textarea></details></div>
+ <div class="panel"><h2>Importar backup</h2><p class="sub">Substitui todos os dados atuais da conta pelos do arquivo.</p>
+ <label for="impf">Arquivo .md</label><input id="impf" type="file" accept=".md,.txt" onchange="rd(this.files[0])">
+ <details><summary>Colar o conteúdo em vez de enviar o arquivo</summary><textarea class="big" id="inp" placeholder="Cole aqui o conteúdo do arquivo .md" style="margin-top:10px"></textarea><button class="btn s" style="margin-top:10px" onclick="imp($('#inp').value)">Importar texto colado</button></details></div>`}
+function dl(){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([toMD()],{type:'text/markdown'}));a.download='helpink-backup-'+today()+'.md';document.body.appendChild(a);a.click();a.remove();toast('Backup baixado')}catch(e){toast('O navegador bloqueou o download. Use "Copiar texto".')}}
+function cp(){try{navigator.clipboard.writeText(toMD()).then(()=>toast('Backup copiado'),()=>toast('Não foi possível copiar. Abra "Ver o conteúdo do backup" e copie manualmente.'))}catch(e){toast('Não foi possível copiar. Abra "Ver o conteúdo do backup" e copie manualmente.')}}
 function rd(f){if(!f)return;const r=new FileReader();r.onload=()=>imp(r.result);r.readAsText(f)}
-function imp(t){const m=/```json\s*([\s\S]*?)```/.exec(t||'');if(!m){alert('Arquivo inválido: bloco de dados não encontrado.');return}
- let d;try{d=sanitize(JSON.parse(m[1]))}catch(e){alert('Não foi possível ler os dados.');return}
+function imp(t){const m=/```json\s*([\s\S]*?)```/.exec(t||'');if(!m){toast('Arquivo inválido: o bloco de dados do backup não foi encontrado.');return}
+ let d;try{d=sanitize(JSON.parse(m[1]))}catch(e){toast('Não foi possível ler os dados do backup.');return}
  const n=COLS.reduce((a,c)=>a+d[c].length,0);
  if(!confirm(`Substituir TODOS os dados atuais da sua conta pelos do arquivo (${n} registros)? Os dados atuais serão apagados.`))return;
- const drop=d.dropped;delete d.dropped;db=d;save();alert('Dados importados!'+(drop?` ${drop} registro(s) inválido(s) foram ignorados.`:''));go('dash')}
-const acabou=id=>{db.stock.find(x=>x.id===id).fim=today();save();render()};
+ const drop=d.dropped;delete d.dropped;db=d;save();go('dash');toast('Backup importado'+(drop?`. ${drop} registro(s) inválido(s) foram ignorados.`:''))}
+/* ---- Estoque ---- */
+const acabou=id=>{db.stock.find(x=>x.id===id).fim=today();save();render();toast('Material marcado como acabado hoje')};
 const dias=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/864e5));
 function vEst2(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.compra||'').localeCompare(a.compra||'')),em=db.stock.filter(s=>!s.fim).length;
- return`<header><div><h1>Estoque</h1><div class="sub">Quando você comprou e quando acabou cada material</div></div></header>
- <div class="grid">${statBox('📦','',db.stock.length,'Materiais cadastrados')}${statBox('⏳','',em,'Em uso')}${statBox('✅','',db.stock.length-em,'Já acabaram')}</div>
- <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
- ${l.map(s=>`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${s.qtd?'Qtd '+esc(s.qtd)+' · ':''}Comprado em ${fd(s.compra)||'—'}${s.fim?' · acabou em '+fd(s.fim):''}</small></div><span class="bd ${s.fim?'c':''}">${s.fim?(s.compra?'Durou '+dias(s.compra,s.fim)+' dias':'Acabou'):'Em uso'}</span>${s.fim?'':`<button class="btn s" onclick="acabou('${s.id}')">Acabou hoje</button>`}</div>`).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
+ return ph('Estoque','Quando cada material foi comprado e quanto tempo durou.')+
+ ledger([['Materiais',db.stock.length],['Em uso',em],['Já acabaram',db.stock.length-em]])+
+ `<div class="sec">${db.stock.length?`<div class="toolbar">${searchIn('Buscar material')}</div>`:''}
+ ${l.length?`<div class="list">${l.map(s=>`<div class="row" ${ROLE} onclick="edK('${s.id}')"><div class="r-main"><div class="r-title">${esc(s.nome)}</div>${mt(s.qtd?'Quantidade '+esc(s.qtd):'','Comprado em '+(fd(s.compra)||'—'),s.fim?'Acabou em '+fd(s.fim):'')}</div><span class="bd ${s.fim?'c':''}">${s.fim?(s.compra?'Durou '+dias(s.compra,s.fim)+' dias':'Acabou'):'Em uso'}</span>${s.fim?'':`<button class="btn s sm" onclick="event.stopPropagation();acabou('${s.id}')">Acabou hoje</button>`}</div>`).join('')}</div>`
+  :db.stock.length?empty('Nenhum material encontrado','Confira a grafia do nome.'):empty('Nenhum material cadastrado','Cadastre tintas, cartuchos e descartáveis para saber quanto tempo cada um dura.',`<button class="btn" onclick="addK()">${ic('plus')}Novo material</button>`)}</div>`+fab('Novo material','addK()')}
 const V={dash:vDash,cli:vCli,ses:vSes,pes:vPes,est:vEst2,bkp:vBkp,usr:vUsr};
-function render(){$('#nav').innerHTML=navH();$('#main').innerHTML=V[tab]()}
-function askName(){$('#mod').innerHTML=`<div class="modal"><div><h2>Bem-vindo ao HelpInk! 👋</h2><div class="sub">Como devemos chamar você ou o seu estúdio?</div><label>Seu nome ou nome do estúdio</label><input id="nm" maxlength="40" placeholder="Ex.: Estúdio do Amin"><div class="bar" style="margin:18px 0 0"><button class="btn" id="nmok">Começar</button></div></div></div>`;
- const ok=()=>{const v=$('#nm').value.trim();if(!v){$('#nm').focus();return}db.studio=v;db.named=1;save();closeM();render()};
- $('#nmok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()};setTimeout(()=>$('#nm').focus(),50)}
+function render(){$('#nav').innerHTML=navH();$('#main').innerHTML=V[tab]();
+ // ação principal: botão flutuante no celular e no cabeçalho da página no computador
+ const f=$('#main .fab'),h=$('#main .ph');if(f&&h){let tl=h.querySelector('.ph-tools');if(!tl){tl=document.createElement('div');tl.className='ph-tools';h.appendChild(tl)}const b=f.cloneNode(true);b.className='btn ph-act';tl.appendChild(b)}}
+function askName(){dlg('Boas-vindas ao HelpInk',`<p class="sub">Como devemos chamar você ou o seu estúdio? O nome aparece no Início e nas mensagens enviadas aos clientes.</p><label for="nm">Nome do estúdio ou seu nome</label><input id="nm" maxlength="40" placeholder="Ex.: Estúdio Agulha de Ouro">`,`<span class="sp"></span><button class="btn" id="nmok">Começar</button>`);
+ const ok=()=>{const v=$('#nm').value.trim();if(!v){$('#nm').focus();return ferr('Digite um nome para continuar.')}db.studio=v;db.named=1;save();closeM();render()};
+ $('#nmok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()};setTimeout(()=>$('#nm').focus(),60)}
 /* ---- Conta (o login é feito pelo Cloudflare Access antes de o site abrir) ---- */
-function screen(h){$('#app').style.display='none';closeM();const A=$('#auth');A.style.display='';A.innerHTML=`<div class="auth"><div class="card"><div class="logo"><b>H</b><span>HelpInk</span></div>${h}</div></div>`}
+function screen(h){$('#app').style.display='none';closeM();const A=$('#auth');A.style.display='';A.innerHTML=`<div class="auth"><div class="panel"><span class="mark">HelpInk</span>${h}</div></div>`}
 let me=null;
-const btns=b=>`<div class="bar" style="margin:18px 0 0">${b}<button class="btn s" onclick="sair()">Sair</button></div><div class="sub" style="margin-top:12px">Conectado como ${esc(me&&me.email)}</div>`;
-function failV(e){console.error(e);screen(`<h2>Não foi possível carregar</h2><div class="note neg">${esc(e.message)}</div><div class="bar" style="margin:18px 0 0"><button class="btn" onclick="location.reload()">${e.auth?'Entrar':'Tentar de novo'}</button></div>`)}
+const btns=b=>`<div class="acts" style="margin-top:22px">${b}<button class="btn s" onclick="sair()">Sair</button></div><p class="sub" style="margin-top:14px">Conectado como ${esc(me&&me.email)}</p>`;
+function failV(e){console.error(e);screen(`<h1 style="font-size:23px">Não foi possível carregar</h1><div class="note neg">${esc(e.message)}</div><div class="acts" style="margin-top:22px"><button class="btn" onclick="location.reload()">${e.auth?'Entrar de novo':'Tentar de novo'}</button></div>`)}
 function signupV(msg,v){v=v||{};
- screen(`<h2>Criar sua conta</h2><div class="sub">Você entrou como <b>${esc(me.email)}</b>. Preencha seus dados para pedir acesso ao HelpInk.</div>
- <label>Seu nome *</label><input id="su_n" maxlength="80" autocomplete="name" value="${esc(v.nome)}">
- <label>Nome do estúdio</label><input id="su_e" maxlength="80" value="${esc(v.estudio)}">
- <label>Telefone / WhatsApp</label><input id="su_t" type="tel" maxlength="30" autocomplete="tel" value="${esc(v.telefone)}">
- ${msg?`<div class="note neg">${esc(msg)}</div>`:''}<div class="note">Seu acesso será liberado assim que o administrador aprovar o cadastro.</div>
+ screen(`<h1 style="font-size:23px">Peça seu acesso</h1><p class="sub">Você entrou como <b>${esc(me.email)}</b>. Conte quem você é para o administrador liberar o HelpInk.</p>
+ <label for="su_n">Seu nome *</label><input id="su_n" maxlength="80" autocomplete="name" value="${esc(v.nome)}">
+ <label for="su_e">Nome do estúdio</label><input id="su_e" maxlength="80" value="${esc(v.estudio)}">
+ <label for="su_t">Telefone ou WhatsApp</label><input id="su_t" type="tel" maxlength="30" autocomplete="tel" value="${esc(v.telefone)}">
+ ${msg?`<div class="note neg" role="alert">${esc(msg)}</div>`:''}
  ${btns('<button class="btn" id="su_ok" style="flex:1">Pedir acesso</button>')}`);
  const ok=async()=>{const d={nome:$('#su_n').value.trim(),estudio:$('#su_e').value.trim(),telefone:$('#su_t').value.trim()};if(!d.nome)return $('#su_n').focus();
-  const b=$('#su_ok');b.textContent='Enviando…';b.style.pointerEvents='none';
+  const b=$('#su_ok');b.textContent='Enviando…';b.disabled=true;
   try{await api('/api/signup',d);start()}catch(e){if(e.auth)return failV(e);signupV(e.message,d)}};
  $('#su_ok').onclick=ok;for(const i of document.querySelectorAll('#auth input'))i.onkeydown=e=>{if(e.key==='Enter')ok()};setTimeout(()=>$('#su_n').focus(),50)}
-async function start(){snap=null;screen('<div class="sub">Carregando…</div>');
+async function start(){snap=null;screen('<p class="sub">Carregando seus dados…</p>');
  try{me=await api('/api/me')}catch(e){return failV(e)}
  user={email:me.email,admin:me.admin};
  if(me.status==='none')return signupV();
- if(me.status==='pending')return screen(`<h2>Cadastro enviado ✅</h2><div class="sub">Olá, ${esc(me.user.nome)}! Recebemos seu pedido de acesso.</div><div class="note">Você poderá usar o HelpInk assim que o administrador aprovar o cadastro. Volte mais tarde ou toque em "Verificar de novo".</div>${btns('<button class="btn" onclick="start()">Verificar de novo</button>')}`);
- if(me.status!=='approved')return screen(`<h2>Acesso não liberado</h2><div class="sub">Seu pedido de acesso não foi aprovado. Em caso de dúvida, fale com o administrador do HelpInk.</div>${btns('')}`);
+ if(me.status==='pending')return screen(`<h1 style="font-size:23px">Pedido enviado</h1><p class="sub">Olá, ${esc(me.user.nome)}! Recebemos seu pedido de acesso.</p><div class="note">Você poderá usar o HelpInk assim que o administrador aprovar o cadastro. Volte mais tarde ou toque em "Verificar de novo".</div>${btns('<button class="btn" onclick="start()">Verificar de novo</button>')}`);
+ if(me.status!=='approved')return screen(`<h1 style="font-size:23px">Acesso não liberado</h1><p class="sub">Seu pedido de acesso não foi aprovado. Em caso de dúvida, fale com o administrador do HelpInk.</p>${btns('')}`);
  try{const n=await loadDB();
-  if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=sanitize(L);delete db.dropped;await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pela opção "toque para tentar de novo".');else clearLegacy()}}
+  if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=sanitize(L);delete db.dropped;await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pelo aviso "Não foi possível salvar".');else clearLegacy()}}
  }catch(e){return failV(e)}
  if(!db.named&&me.user&&me.user.estudio){db.studio=me.user.estudio;db.named=1;save()}
  $('#auth').style.display='none';$('#app').style.display='';tab='dash';render();showSync();

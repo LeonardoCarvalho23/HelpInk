@@ -3,43 +3,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Ficha de anamnese · HelpInk</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:light dark;--bg:#fafafa;--cd:#fff;--tx:#18181b;--mu:#71717a;--bd:#e4e4e7;--in:#f4f4f5;--g:#f5b0cd;--gl:#fdf0f6;--gt:#be185d;--on:#4a0d2b;--am:#fef3c7;--amt:#92400e;--rd:#fee2e2;--rdt:#b91c1c;--ok:#d1fae5;--okt:#065f46}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--ok:#064e3b;--okt:#6ee7b7}}
-:root[data-theme="dark"]{--bg:#0f0f11;--cd:#1a1a1e;--tx:#f4f4f5;--mu:#a1a1aa;--bd:#2c2c32;--in:#242429;--gl:#500724;--gt:#f9a8d4;--am:#451a03;--amt:#fcd34d;--rd:#450a0a;--rdt:#fca5a5;--ok:#064e3b;--okt:#6ee7b7}
+:root{color-scheme:light;
+ --paper:#F4F4F7;--surface:#FFFFFF;--raised:#F8F7FB;--line:#E4E2EA;--line-2:#D2CFDB;
+ --ink:#1D1A24;--ink-2:#46414F;--mute:#6B6578;
+ --stencil:#5536C8;--stencil-ink:#FFFFFF;--stencil-soft:#EEEAFB;--stencil-line:#B4A6EC;
+ --ok:#1E7A55;--ok-soft:#E2F2EA;--warn:#9E5604;--warn-soft:#FBEED8;--bad:#BE3048;--bad-soft:#FBE6E9;
+ --f:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-mark:"Grenze Gotisch",Georgia,serif}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;
+ --paper:#121017;--surface:#1A1720;--raised:#221E2A;--line:#2C2735;--line-2:#3B3546;
+ --ink:#EEEAF6;--ink-2:#CBC5D8;--mute:#9A92AB;
+ --stencil:#A893FF;--stencil-ink:#170F35;--stencil-soft:#2A2340;--stencil-line:#5D4E96;
+ --ok:#5FCB9A;--ok-soft:#163026;--warn:#F0B25A;--warn-soft:#35260F;--bad:#FF7D90;--bad-soft:#3A1820}}
 *{box-sizing:border-box}
-body{margin:0;font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.45}
-main{max-width:720px;margin:0 auto;padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px))}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;margin-bottom:18px}
-.logo b{background:var(--g);color:var(--on);width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
-h1{font-size:23px;margin:0 0 4px}h2{font-size:18px;margin:0 0 6px}.sub{color:var(--mu);font-size:14px}
-.card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-top:14px}
-label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}
-input,textarea{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:11px 12px;width:100%}
-textarea{min-height:80px}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-.q{padding:12px 0;border-top:1px solid var(--bd)}.q:first-of-type{border-top:0}
-.q p{margin:0 0 8px}
-.yn{display:flex;gap:8px}.yn label{margin:0;display:flex;align-items:center;gap:6px;background:var(--in);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;color:var(--tx);font-size:15px;cursor:pointer}
-.yn input{width:18px;height:18px;margin:0}
-.ck{display:flex;gap:10px;align-items:flex-start;color:var(--tx);font-size:15px;margin:12px 0}.ck input{width:22px;height:22px;flex:none;margin-top:1px}
-ol{padding-left:20px}ol li{margin-bottom:6px}
-.note{font-size:13px;background:var(--in);padding:10px 12px;border-radius:10px;color:var(--mu);margin-top:12px}
-.warn{background:var(--am);color:var(--amt)}.err{background:var(--rd);color:var(--rdt)}.okb{background:var(--ok);color:var(--okt)}
-.btn{all:unset;cursor:pointer;background:var(--g);color:var(--on);padding:13px 18px;border-radius:12px;font-size:16px;font-weight:600;text-align:center;display:block}
-.btn.s{background:var(--in);color:var(--tx);font-weight:500}.bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.bar .btn{flex:1;min-width:180px}
-code{word-break:break-all;font-size:13px;background:var(--in);padding:2px 6px;border-radius:6px}
+body{margin:0;font:400 16px/1.55 var(--f);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+main{max-width:680px;margin:0 auto;padding:22px 16px calc(48px + env(safe-area-inset-bottom,0px))}
+.logo{font-family:var(--f-mark);font-weight:600;font-size:30px;line-height:1;margin-bottom:22px;color:var(--ink)}
+h1{font-size:27px;line-height:1.15;font-weight:650;letter-spacing:-.018em;margin:0 0 4px}
+h2{font-size:19px;line-height:1.3;font-weight:600;margin:0 0 4px}
+.sub{color:var(--mute);font-size:14.5px}
+:focus-visible{outline:2px solid var(--stencil);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+label{display:block;font-size:14px;font-weight:500;color:var(--ink-2);margin:16px 0 6px}
+input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:11px 12px;min-height:46px;width:100%}
+input:focus,textarea:focus{outline:none;border-color:var(--stencil);box-shadow:0 0 0 3px var(--stencil-soft)}
+textarea{min-height:88px;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--mute);opacity:.8}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+/* Perguntas: Sim/Não como botões grandes, fáceis de tocar */
+.q{padding:16px 0;border-top:1px solid var(--line)}.q:first-of-type{border-top:0;padding-top:6px}
+.q p{margin:0 0 10px;font-weight:500}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:280px}
+.yn label{margin:0;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);font-size:15px;font-weight:500;cursor:pointer}
+.yn input{position:absolute;opacity:0;width:1px;height:1px;min-height:0}
+.yn label:has(input:checked){border-color:var(--stencil);background:var(--stencil-soft);color:var(--stencil);font-weight:600}
+.yn label:has(input:focus-visible){outline:2px solid var(--stencil);outline-offset:2px}
+.ck{display:flex;gap:12px;align-items:flex-start;color:var(--ink);font-size:15px;font-weight:400;margin:14px 0;cursor:pointer;line-height:1.45}
+.ck input{width:22px;height:22px;min-height:0;flex:none;margin-top:1px;accent-color:var(--stencil)}
+ol{padding-left:22px;margin:14px 0}ol li{margin-bottom:8px;color:var(--ink-2)}
+.note{font-size:14px;line-height:1.5;background:var(--raised);border:1px solid var(--line);padding:12px 14px;border-radius:10px;color:var(--ink-2);margin-top:14px}
+.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}.err{background:var(--bad-soft);color:var(--bad);border-color:transparent}.okb{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.err ul{margin:6px 0 0;padding-left:18px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:0 18px;border-radius:12px;border:1px solid transparent;background:var(--stencil);color:var(--stencil-ink);font:600 16px var(--f);cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn.s{background:var(--surface);color:var(--ink);border-color:var(--line-2);font-weight:500}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.bar .btn{flex:1;min-width:180px}
+code{font-family:ui-monospace,Consolas,monospace;word-break:break-all;font-size:13px;background:var(--raised);border:1px solid var(--line);padding:8px 10px;border-radius:8px;display:block;margin-top:6px;color:var(--ink-2)}
+/* Assinatura: área destacada com contorno tracejado, como o decalque */
+.sign{border:1.5px dashed var(--stencil-line);background:var(--raised)}
+.sign input{font-size:18px;font-weight:500}
+.q.miss p{color:var(--bad)}.q.miss .yn label{border-color:var(--bad)}.ck.miss{color:var(--bad)}
 .hide{display:none}
-@media(max-width:560px){.f2{grid-template-columns:1fr}h1{font-size:20px}}
+@media(max-width:560px){.f2{grid-template-columns:1fr}h1{font-size:24px}.card{padding:18px 16px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
-<main id="m"><div class="logo"><b>H</b><span>HelpInk</span></div><div class="sub">Carregando…</div></main>
+<main id="m"><div class="logo">HelpInk</div><p class="sub">Carregando sua ficha…</p></main>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const T=location.hash.slice(1);let F=null;
 const dt=iso=>new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
-const head=()=>`<div class="logo"><b>H</b><span>HelpInk</span></div>`;
+const head=()=>`<div class="logo">HelpInk</div>`;
 function msg(t,b,cls){$('#m').innerHTML=head()+`<div class="card"><h1>${t}</h1><div class="note ${cls||''}">${b}</div></div>`}
 async function call(path,body){let r;try{r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store'})}catch(e){throw new Error('Sem conexão. Verifique sua internet e tente de novo.')}
  const j=await r.json().catch(()=>null);if(!j)throw new Error('Erro do servidor ('+r.status+'). Tente de novo.');if(!r.ok){const e=new Error(j.error||'Erro');e.list=j.errors;throw e}return j}
@@ -54,7 +80,7 @@ async function init(){
  if(F.status==='expired')return msg('Link expirado','Este link não é mais válido. Peça um novo link ao estúdio.','warn');
  form()}
 function form(){const t=F.term;
- $('#m').innerHTML=head()+`<h1>Ficha de anamnese</h1><div class="sub">${esc(F.studio)} · link válido até ${dt(F.expires_at)}</div>
+ $('#m').innerHTML=head()+`<h1>Ficha de anamnese</h1><p class="sub">${esc(F.studio)}. Link válido até ${dt(F.expires_at)}.</p>
  <div class="card"><div>Olá${F.hint?', '+esc(F.hint):''}! Antes da sua sessão, preencha seus dados e sua ficha de saúde e assine o termo de consentimento. Leva uns 5 minutos.</div>
  <div class="note">Suas respostas são confidenciais e usadas apenas pelo estúdio para a sua segurança durante o procedimento.</div></div>
  <div class="card"><h2>1. Seus dados</h2>
@@ -82,7 +108,7 @@ function form(){const t=F.term;
   ${t.decls.map(d=>`<label class="ck"><input type="checkbox" id="c_${esc(d.id)}">${esc(d.t)}${d.req?' *':''}</label>`).join('')}
   <div class="note"><b>Aviso de privacidade.</b> ${esc(t.privacy)}</div>
  </div>
- <div class="card"><h2>4. Assinatura</h2>
+ <div class="card sign"><h2>4. Assinatura</h2>
   <div class="sub" id="sigLbl">Para assinar, digite seu nome completo exatamente como informado acima.</div>
   <label>Assinatura (nome completo) *</label><input id="sig" maxlength="120" autocomplete="off">
   <div class="note">Ao clicar em "Assinar ficha", você assina eletronicamente este documento. Registramos data, hora, endereço IP e dispositivo, e você recebe uma cópia com um código que comprova que ela não foi alterada.</div>
@@ -90,7 +116,7 @@ function form(){const t=F.term;
   <div class="bar"><button class="btn" id="go">Assinar ficha</button></div>
  </div>`;
  $('#go').onclick=sign;}
-function det(id){const v=(document.querySelector(`input[name="q_${id}"]:checked`)||{}).value,b=$('#d_'+id);if(b)b.classList.toggle('hide',v!=='sim')}
+function det(id){const qe=document.querySelector(`[data-q="${id}"]`);if(qe)qe.classList.remove('miss');const v=(document.querySelector(`input[name="q_${id}"]:checked`)||{}).value,b=$('#d_'+id);if(b)b.classList.toggle('hide',v!=='sim')}
 function minor(){const a=ageOf(iso($('#nasc').value)),m=a!==null&&a<18;$('#respBox').classList.toggle('hide',!m);
  $('#sigLbl').textContent=m?'Para assinar, o responsável legal deve digitar o próprio nome completo, exatamente como informado acima.':'Para assinar, digite seu nome completo exatamente como informado acima.';return m}
 async function sign(){const t=F.term,b=$('#go');
@@ -100,8 +126,19 @@ async function sign(){const t=F.term,b=$('#go');
  for(const d of t.decls)data.decls[d.id]=$('#c_'+d.id).checked;
  b.textContent='Assinando…';b.style.pointerEvents='none';$('#errs').innerHTML='';
  try{const r=await call('/assinar/api/sign',{t:T,data});done(r)}
- catch(e){b.textContent='Assinar ficha';b.style.pointerEvents='';
-  $('#errs').innerHTML=`<div class="note err"><b>${esc(e.message)}</b>${e.list?'<ul>'+e.list.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':''}</div>`;$('#errs').scrollIntoView({behavior:'smooth',block:'center'})}}
+ catch(e){b.textContent='Assinar ficha';b.style.pointerEvents='';showErrs(e)}}
+// Resume os erros e destaca no formulário o que falta (em vez de uma lista enorme)
+function showErrs(e){const t=F.term,L=e.list||[],pre=p=>L.filter(x=>x.startsWith(p));
+ const resp=pre('Responda: '),det=pre('Detalhe a resposta: '),dec=pre('Marque a declaração'),rest=L.filter(x=>!resp.includes(x)&&!det.includes(x)&&!dec.includes(x));
+ let first=null;
+ for(const el of $$('.q')){const q=t.questions.find(q=>q.id===el.dataset.q),m=!!q&&(resp.includes('Responda: '+q.q)||det.includes('Detalhe a resposta: '+q.q));el.classList.toggle('miss',m);if(m&&!first)first=el}
+ for(const d of t.decls){const c=$('#c_'+d.id);c.closest('label').classList.toggle('miss',d.req&&!c.checked&&dec.length>0)}
+ const items=[...rest];
+ if(resp.length)items.push(`Responda ${resp.length==1?'a pergunta destacada':'as '+resp.length+' perguntas destacadas'} da ficha de saúde.`);
+ if(det.length)items.push(`Detalhe ${det.length==1?'a resposta "Sim" destacada':'as '+det.length+' respostas "Sim" destacadas'}.`);
+ if(dec.length)items.push(`Marque ${dec.length==1?'a declaração obrigatória destacada':'as '+dec.length+' declarações obrigatórias destacadas'} do termo.`);
+ $('#errs').innerHTML=`<div class="note err" role="alert"><b>${esc(e.message)}</b>${items.length?'<ul>'+items.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':''}</div>`;
+ (rest.length||!first?$('#errs'):first).scrollIntoView({behavior:'smooth',block:'center'})}
 let DOC=null;
 async function done(r){DOC=r;
  let ok='';try{const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(r.doc)));ok=[...d].map(x=>x.toString(16).padStart(2,'0')).join('')===r.doc_hash?' ✔ conferido':''}catch(e){}
