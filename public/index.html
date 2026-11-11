@@ -76,7 +76,7 @@ async function api(path,body){let r;
  try{r=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body&&JSON.stringify(body),credentials:'same-origin',redirect:'manual',cache:'no-store'})}
  catch(e){throw new Error('Sem conexão com o servidor. Verifique sua internet.')}
  // Sessão do Cloudflare Access expirada: a resposta vira um redirecionamento para a tela de login
- if(r.type==='opaqueredirect'||r.status===401||r.status===403){const e=new Error('Sua sessão expirou. Entre novamente.');e.auth=1;throw e}
+ if(r.type==='opaqueredirect'||r.status===401){const e=new Error('Sua sessão expirou. Entre novamente.');e.auth=1;throw e}
  const j=await r.json().catch(()=>null);if(!r.ok||!j)throw new Error((j&&j.error)||'Erro do servidor ('+r.status+')');return j}
 const meta=()=>({studio:db.studio,named:!!db.named});
 // Foto do estado atual: "coleção|id" -> JSON. Comparando com a última foto salva sabemos o que mudou.
@@ -94,7 +94,7 @@ function showSync(){const e=$('#sync');if(!e)return;
  else if(syncErr){e.className='err';e.textContent='⚠ Não foi possível salvar — toque para tentar de novo';e.onclick=()=>save()}
  else{e.className='hide';e.onclick=null}}
 addEventListener('beforeunload',e=>{if(pend||syncErr){e.preventDefault();e.returnValue=''}});
-async function loadDB(){const r=await api('/api/data'),rows=r.rows;user={email:r.email};
+async function loadDB(){const r=await api('/api/data'),rows=r.rows;
  db=blank();for(const r of rows){if(r.col==='meta')Object.assign(db,{studio:r.data.studio||'Meu Estúdio',named:!!r.data.named});else if(db[r.col])db[r.col].push(r.data)}
  snap=snapshot();syncErr=null;return rows.length}
 /* ---- Dados antigos (versão que salvava em cookies/localStorage neste navegador) ---- */
@@ -151,7 +151,25 @@ const buy=id=>{const s=db.stock.find(x=>x.id===id);form('Compra: '+esc(s.nome),[
 const use=id=>{const s=db.stock.find(x=>x.id===id);form('Baixa: '+esc(s.nome),[{k:'qtd',l:'Quantidade usada',t:'number',r:1}],{},o=>s.qtd=Math.max(0,(+s.qtd||0)-o.qtd))};
 /* ---- Telas ---- */
 const NAV=[['dash','📊','Dashboard'],['cli','👥','Clientes'],['ses','🎨','Tatuagens'],['pes','💳','Pessoal'],['est','📦','Estoque'],['bkp','⚙️','Conta']];
-function go(t){tab=t;q='';render();window.scrollTo(0,0)}
+function go(t){tab=t;q='';render();window.scrollTo(0,0);if(t==='usr')loadUsers()}
+const pendN=()=>Array.isArray(usrs)?usrs.filter(u=>u.status==='pending').length:0;
+const navL=()=>user&&user.admin?[...NAV.slice(0,5),['usr','🔑','Usuários'+(pendN()?' ('+pendN()+')':'')],NAV[5]]:NAV;
+const navH=()=>`<div class="logo"><b>H</b><span>HelpInk</span></div>`+navL().map(n=>`<button class="${tab===n[0]?'on':''}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join('');
+/* ---- Usuários (só administradores) ---- */
+let usrs=null;
+async function loadUsers(){try{usrs=(await api('/api/admin/users')).users}catch(e){usrs={err:e.message}}
+ if($('#app').style.display==='none')return;if(tab==='usr')render();else $('#nav').innerHTML=navH()}
+const UST={pending:['Aguardando aprovação','p'],approved:['Aprovado',''],rejected:['Recusado','x']};
+function vUsr(){const l=Array.isArray(usrs)?usrs:[];
+ const A=(i,a,t,c)=>`<button class="btn s ${c||''}" onclick="usrAct(${i},'${a}')">${t}</button>`;
+ return`<header><div><h1>Usuários</h1><div class="sub">Quem pediu acesso e quem pode usar o HelpInk</div></div><button class="btn s" onclick="usrs=null;render();loadUsers()">↻ Atualizar</button></header>
+ ${!usrs?'<div class="empty">Carregando…</div>':usrs.err?`<div class="note neg">${esc(usrs.err)}</div>`:''}
+ ${l.map((u,i)=>{const s=UST[u.status]||[u.status,''];
+  return`<div class="row"><div class="m">${esc(u.nome||u.email)}${u.admin?' · administrador':''}<small>${esc(u.email)}${u.estudio?' · '+esc(u.estudio):''}${u.telefone?' · '+esc(u.telefone):''}</small><small>Pedido em ${fd((u.created_at||'').slice(0,10))} · ${u.clientes} clientes · ${u.sessoes} sessões</small></div><span class="bd ${s[1]}">${s[0]}</span>${u.admin?'':`<div class="acts">${u.status!=='approved'?A(i,'approve','Aprovar'):''}${u.status==='pending'?A(i,'reject','Recusar','d'):''}${u.status==='approved'?A(i,'reject','Bloquear','d'):''}${u.status==='rejected'?A(i,'remove','Remover','d'):''}</div>`}</div>`}).join('')||(Array.isArray(usrs)?'<div class="empty">Nenhum usuário ainda.</div>':'')}
+ <div class="note">Cada pessoa que entra pelo Cloudflare Access ocupa uma das 50 vagas do plano gratuito, mesmo antes de ser aprovada. Para liberar vagas de quem foi recusado, remova a pessoa também em Cloudflare → Zero Trust → Users.</div>`}
+async function usrAct(i,action){const u=usrs[i];if(!u)return;
+ const msg={approve:'Aprovar o acesso de '+u.email+'?',reject:'Recusar/bloquear o acesso de '+u.email+'?',remove:'Remover o pedido de '+u.email+'? A pessoa poderá pedir acesso de novo. Os dados dela, se houver, são mantidos.'}[action];
+ if(!confirm(msg))return;try{await api('/api/admin/users',{email:u.email,action});await loadUsers()}catch(e){alert(e.message)}}
 const monthIn=()=>{const[y,m]=per.split('-'),Y=new Date().getFullYear();let ys='';for(let i=Y-5;i<=Y+1;i++)ys+=`<option ${i==y?'selected':''}>${i}</option>`;
  return`<div class="bar" style="margin:0;gap:6px"><select style="width:auto" onchange="per=$('#pY').value+'-'+this.value;render()">${MES.map((n,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${v===m?'selected':''}>${n}</option>`}).join('')}</select><select id="pY" style="width:auto" onchange="per=this.value+'-${m}';render()">${ys}</select></div>`};
 const statBox=(i,top,n,l,cls)=>`<div class="card st"><div class="top"><div class="ic">${i}</div><em>${top}</em></div><div class="n ${cls||''}">${n}</div><div class="l">${l}</div></div>`;
@@ -206,18 +224,39 @@ function vEst2(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLo
  <div class="grid">${statBox('📦','',db.stock.length,'Materiais cadastrados')}${statBox('⏳','',em,'Em uso')}${statBox('✅','',db.stock.length-em,'Já acabaram')}</div>
  <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
  ${l.map(s=>`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${s.qtd?'Qtd '+s.qtd+' · ':''}Comprado em ${fd(s.compra)||'—'}${s.fim?' · acabou em '+fd(s.fim):''}</small></div><span class="bd ${s.fim?'c':''}">${s.fim?(s.compra?'Durou '+dias(s.compra,s.fim)+' dias':'Acabou'):'Em uso'}</span>${s.fim?'':`<button class="btn s" onclick="acabou('${s.id}')">Acabou hoje</button>`}</div>`).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
-const V={dash:vDash,cli:vCli,ses:vSes,pes:vPes,est:vEst2,bkp:vBkp};
-function render(){$('#nav').innerHTML=`<div class="logo"><b>H</b><span>HelpInk</span></div>`+NAV.map(n=>`<button class="${tab===n[0]?'on':''}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join('');$('#main').innerHTML=V[tab]()}
+const V={dash:vDash,cli:vCli,ses:vSes,pes:vPes,est:vEst2,bkp:vBkp,usr:vUsr};
+function render(){$('#nav').innerHTML=navH();$('#main').innerHTML=V[tab]()}
 function askName(){$('#mod').innerHTML=`<div class="modal"><div><h2>Bem-vindo ao HelpInk! 👋</h2><div class="sub">Como devemos chamar você ou o seu estúdio?</div><label>Seu nome ou nome do estúdio</label><input id="nm" maxlength="40" placeholder="Ex.: Estúdio do Amin"><div class="bar" style="margin:18px 0 0"><button class="btn" id="nmok">Começar</button></div></div></div>`;
  const ok=()=>{const v=$('#nm').value.trim();if(!v){$('#nm').focus();return}db.studio=v;db.named=1;save();closeM();render()};
  $('#nmok').onclick=ok;$('#nm').onkeydown=e=>{if(e.key==='Enter')ok()};setTimeout(()=>$('#nm').focus(),50)}
 /* ---- Conta (o login é feito pelo Cloudflare Access antes de o site abrir) ---- */
 function screen(h){$('#app').style.display='none';closeM();const A=$('#auth');A.style.display='';A.innerHTML=`<div class="auth"><div class="card"><div class="logo"><b>H</b><span>HelpInk</span></div>${h}</div></div>`}
-async function start(){snap=null;screen('<div class="sub">Carregando seus dados…</div>');
+let me=null;
+const btns=b=>`<div class="bar" style="margin:18px 0 0">${b}<button class="btn s" onclick="sair()">Sair</button></div><div class="sub" style="margin-top:12px">Conectado como ${esc(me&&me.email)}</div>`;
+function failV(e){console.error(e);screen(`<h2>Não foi possível carregar</h2><div class="note neg">${esc(e.message)}</div><div class="bar" style="margin:18px 0 0"><button class="btn" onclick="location.reload()">${e.auth?'Entrar':'Tentar de novo'}</button></div>`)}
+function signupV(msg,v){v=v||{};
+ screen(`<h2>Criar sua conta</h2><div class="sub">Você entrou como <b>${esc(me.email)}</b>. Preencha seus dados para pedir acesso ao HelpInk.</div>
+ <label>Seu nome *</label><input id="su_n" maxlength="80" autocomplete="name" value="${esc(v.nome)}">
+ <label>Nome do estúdio</label><input id="su_e" maxlength="80" value="${esc(v.estudio)}">
+ <label>Telefone / WhatsApp</label><input id="su_t" type="tel" maxlength="30" autocomplete="tel" value="${esc(v.telefone)}">
+ ${msg?`<div class="note neg">${esc(msg)}</div>`:''}<div class="note">Seu acesso será liberado assim que o administrador aprovar o cadastro.</div>
+ ${btns('<button class="btn" id="su_ok" style="flex:1">Pedir acesso</button>')}`);
+ const ok=async()=>{const d={nome:$('#su_n').value.trim(),estudio:$('#su_e').value.trim(),telefone:$('#su_t').value.trim()};if(!d.nome)return $('#su_n').focus();
+  const b=$('#su_ok');b.textContent='Enviando…';b.style.pointerEvents='none';
+  try{await api('/api/signup',d);start()}catch(e){if(e.auth)return failV(e);signupV(e.message,d)}};
+ $('#su_ok').onclick=ok;for(const i of document.querySelectorAll('#auth input'))i.onkeydown=e=>{if(e.key==='Enter')ok()};setTimeout(()=>$('#su_n').focus(),50)}
+async function start(){snap=null;screen('<div class="sub">Carregando…</div>');
+ try{me=await api('/api/me')}catch(e){return failV(e)}
+ user={email:me.email,admin:me.admin};
+ if(me.status==='none')return signupV();
+ if(me.status==='pending')return screen(`<h2>Cadastro enviado ✅</h2><div class="sub">Olá, ${esc(me.user.nome)}! Recebemos seu pedido de acesso.</div><div class="note">Você poderá usar o HelpInk assim que o administrador aprovar o cadastro. Volte mais tarde ou toque em "Verificar de novo".</div>${btns('<button class="btn" onclick="start()">Verificar de novo</button>')}`);
+ if(me.status!=='approved')return screen(`<h2>Acesso não liberado</h2><div class="sub">Seu pedido de acesso não foi aprovado. Em caso de dúvida, fale com o administrador do HelpInk.</div>${btns('')}`);
  try{const n=await loadDB();
   if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=Object.assign(blank(),L);await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pela opção "toque para tentar de novo".');else clearLegacy()}}
- }catch(e){console.error(e);screen(`<h2>Não foi possível carregar</h2><div class="note neg">${esc(e.message)}</div><div class="bar" style="margin:18px 0 0"><button class="btn" onclick="location.reload()">${e.auth?'Entrar':'Tentar de novo'}</button></div>`);return}
+ }catch(e){return failV(e)}
+ if(!db.named&&me.user&&me.user.estudio){db.studio=me.user.estudio;db.named=1;save()}
  $('#auth').style.display='none';$('#app').style.display='';tab='dash';render();showSync();
+ if(user.admin)loadUsers();
  if(!db.named&&(!db.studio||db.studio==='Meu Estúdio'))askName()}
 async function sair(){await queue;if(syncErr&&!syncErr.auth&&!confirm('Algumas alterações não foram salvas e serão perdidas. Sair mesmo assim?'))return;
  syncErr=null;location.href='/cdn-cgi/access/logout'}

@@ -10,15 +10,34 @@ inteiramente na **Cloudflare**, no plano gratuito:
 | Login | **Cloudflare Access** (Zero Trust) | até 50 usuários |
 
 O login é feito pelo Cloudflare Access **antes** de o site abrir: a pessoa digita o
-e-mail, recebe um código (PIN) e entra. Não há senha para guardar. Cada e-mail
-autorizado tem seus próprios dados, separados dos outros.
+e-mail, recebe um código (PIN) e entra. Não há senha para guardar.
+
+## Contas e aprovação
+
+Qualquer pessoa pode criar uma conta, mas só usa o app depois que um administrador aprova:
+
+1. A pessoa abre o site, informa o e-mail e digita o código que recebe.
+2. Na primeira vez, o HelpInk pede nome, nome do estúdio e telefone → **Pedir acesso**.
+3. Ela vê "Cadastro enviado" até ser aprovada. Antes disso a API recusa qualquer dado.
+4. O administrador vê os pedidos na aba **Usuários** (com o número de pendentes) e clica em
+   **Aprovar** ou **Recusar**. Usuários aprovados podem ser **bloqueados** depois; pedidos
+   recusados podem ser **removidos** (a pessoa pode pedir de novo).
+
+Os administradores são definidos no segredo `ADMIN_EMAILS` do Worker
+(**Workers & Pages → helpink → Settings → Variables and secrets**), separados por vírgula.
+Eles são aprovados automaticamente. O segredo não fica no GitHub.
+
+Cada e-mail que entra pelo Access ocupa uma das 50 vagas do plano Free, mesmo antes de ser
+aprovado. Para liberar vagas de quem foi recusado, remova a pessoa também em
+**Zero Trust → Users**.
 
 ## Estrutura
 
 ```
 public/index.html          o app (telas)
-src/worker.js              API /api/* + verificação do login do Access
-migrations/0001_init.sql   cria a tabela no D1
+src/worker.js              API /api/* + verificação do login do Access + aprovação de contas
+migrations/0001_init.sql   tabela de dados (records)
+migrations/0002_users.sql  tabela de contas (users)
 wrangler.jsonc             configuração do Worker (banco, Access)
 ```
 
@@ -30,7 +49,7 @@ Tudo pode ser feito pelo painel da Cloudflare (<https://dash.cloudflare.com>), s
 
 1. **Storage & Databases → D1 SQL Database → Create**, nome `helpink`.
 2. Copie o **Database ID** e cole em `wrangler.jsonc` no campo `database_id`.
-3. Abra o banco → aba **Console**, cole o conteúdo de `migrations/0001_init.sql` e execute.
+3. Abra o banco → aba **Console**, cole e execute o conteúdo de `migrations/0001_init.sql` e depois o de `migrations/0002_users.sql`.
 
 ### 2. Publicar o Worker a partir do GitHub
 
@@ -43,20 +62,19 @@ Nesse momento o site abre, mas mostra "Não autorizado" — falta ligar o login.
 
 ### 3. Ligar o Cloudflare Access (login)
 
-1. No Worker: **Settings → Domains & Routes → workers.dev → Enable Cloudflare Access**.
-   Se for o primeiro uso do Zero Trust, a Cloudflare pede para escolher um nome de equipe
-   (ex.: `minhaequipe`) e um plano: escolha **Free**.
-2. Ao ativar, a Cloudflare mostra o **AUD** (Application Audience Tag) da aplicação.
-   Também fica em **Zero Trust → Access → Applications → (sua aplicação) → Overview**.
-3. Em **Zero Trust → Access → Applications → (sua aplicação) → Policies**, edite a política
-   para incluir quem pode entrar — por exemplo **Include → Emails** com o seu e-mail e o dos
-   tatuadores. Quem não estiver na lista não consegue entrar.
-4. O método de login **One-time PIN** (código por e-mail) já vem ativo. Em
-   **Zero Trust → Settings → Authentication** dá para adicionar Google, GitHub etc.
+1. Ative o **Zero Trust** no plano **Free** (Zero Trust → Get started). A Cloudflare pode
+   pedir um cartão, mas o plano Free não cobra.
+2. Em **Zero Trust → Integrations → Identity providers**, adicione **One-time PIN**
+   (código por e-mail), para que qualquer pessoa consiga entrar com o próprio e-mail.
+3. Em **Zero Trust → Access controls → Policies**, crie uma política **Allow** com
+   **Include → Everyone**. Quem libera o uso de verdade é a aprovação dentro do app.
+4. No Worker: aba **Access → Protect this Worker behind Access**, escopo **All traffic**,
+   e escolha a política do passo 3. A tela mostra o **AUD tag** e o endereço da equipe (JWKS).
 5. Em `wrangler.jsonc`, preencha:
-   - `ACCESS_TEAM_DOMAIN`: `https://minhaequipe.cloudflareaccess.com` (o nome da sua equipe)
-   - `ACCESS_AUD`: o AUD copiado no passo 2
-6. Commit e push. Pronto: ao abrir o site, aparece a tela de login da Cloudflare.
+   - `ACCESS_TEAM_DOMAIN`: `https://<sua-equipe>.cloudflareaccess.com`
+   - `ACCESS_AUD`: o AUD tag do passo 4
+6. Crie o segredo `ADMIN_EMAILS` com o seu e-mail (veja "Contas e aprovação").
+7. Commit e push. Pronto: ao abrir o site, aparece a tela de login da Cloudflare.
 
 O Worker não confia só na tela de login: em toda chamada à API ele confere a assinatura do
 token do Access, a equipe, o AUD e a validade. Se alguém chegar ao site por outro endereço
