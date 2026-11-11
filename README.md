@@ -41,6 +41,8 @@ migrations/0002_users.sql  tabela de contas (users)
 migrations/0003_forms.sql  fichas de anamnese assinadas (forms)
 migrations/0004_sessao_agenda.sql  ficha por sessão e link da agenda do cliente
 public/assinar/agenda/     página pública da agenda do cliente
+public/index.html          página inicial pública (funcionalidades + botão Entrar)
+public/app/index.html      o app (exige login)
 public/assinar/index.html  página pública da ficha para o cliente
 wrangler.jsonc             configuração do Worker (banco, Access)
 ```
