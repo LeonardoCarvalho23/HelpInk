@@ -110,6 +110,14 @@ apontando para a Cloudflare). Em `wrangler.jsonc`:
 - `workers_dev: false` e `preview_urls: false` desligam os endereços `*.workers.dev`,
   para o app existir em um único endereço.
 
+Configurações de segurança do domínio (painel da Cloudflare → helpink.app.br):
+
+- **SSL/TLS → Edge Certificates:** *Always Use HTTPS* ligado e *Minimum TLS Version* 1.2.
+  O Worker também recusa chamadas de API por HTTP, e `public/_headers` envia HSTS (1 ano).
+- **Security → Security rules → Rate limiting:** regra "HelpInk - limite ficha e agenda
+  publicas": caminho começando com `/assinar/api/`, por IP, mais de 20 requisições em 10 s
+  bloqueia por 10 s. Protege as rotas públicas (ficha e agenda) e a cota diária gratuita do Worker.
+
 Se um dia você criar outra aplicação do Access que emita login para o app, adicione o AUD dela em
 `ACCESS_AUD`, separado por vírgula. Hoje ele lista só o AUD da aplicação de `/app` e `/api`.
 
