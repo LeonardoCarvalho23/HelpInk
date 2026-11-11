@@ -121,6 +121,7 @@ export default {
         return json({ error: 'Sua conta ainda não foi aprovada.', code: 'not_approved', status: acc.status }, 403);
 
       if (url.pathname === '/api/forms' || url.pathname === '/api/forms/doc') return await ownerForms(req, env, url, email);
+      if (url.pathname === '/api/agenda') return await ownerAgenda(req, env, email);
 
       if (url.pathname === '/api/data' && req.method === 'GET') {
         const { results } = await env.DB
@@ -188,7 +189,7 @@ export default {
 /* ---------------- Ficha de anamnese e assinatura eletrônica ---------------- */
 
 const FORM_TTL_DAYS = 7;
-const TERM_VERSION = '2026-11-v1';
+const TERM_VERSION = '2026-11-v2'; // v2: a ficha é por sessão e lista as tatuagens do dia
 const enc = new TextEncoder();
 const hex = u8 => [...u8].map(x => x.toString(16).padStart(2, '0')).join('');
 const b64 = u8 => { let s = ''; for (const x of u8) s += String.fromCharCode(x); return btoa(s); };
@@ -218,7 +219,17 @@ function cpfOk(c) {
   }
   return true;
 }
-const fmtCpf = c => String(c).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+// Sessões vêm do app (registro livre em JSON): tudo que sai daqui é revalidado e cortado.
+const RE_DATE = /^\d{4}-\d{2}-\d{2}$/, RE_HM = /^([01]\d|2[0-3]):[0-5]\d$/;
+const SES_ST = ['Pendente', 'Confirmado', 'Concluído'];
+const cut = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+const todayBR = () => new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10); // Brasília (sem horário de verão)
+const fmtDate = d => d.split('-').reverse().join('/');
+const sessTats = s => (Array.isArray(s.tatuagens) && s.tatuagens.length ? s.tatuagens : [s]).slice(0, 30)
+  .map(t => ({ desc: cut(t && t.desc, 300), estilo: cut(t && t.estilo, 40), cm: Math.max(0, Math.min(1000, +(t && t.cm) || 0)) }))
+  .filter(t => t.desc);
+const procOf = s => ({ data: RE_DATE.test(s.data || '') ? s.data : '', hora: RE_HM.test(s.hora || '') ? s.hora : '', tatuagens: sessTats(s) });
+const fmtCpf = c =>String(c).replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 
 const QUESTIONS = [
   { id: 'alergia', q: 'Tem alguma alergia (látex, metais, tintas, pomadas, anestésicos, medicamentos ou outra)?', det: 'Quais?' },
@@ -235,17 +246,21 @@ const QUESTIONS = [
   { id: 'alcool', q: 'Consumiu bebida alcoólica ou drogas nas últimas 24 horas?', det: 'O quê?' }
 ];
 
-function buildTerm(studio) {
-  const s = studio || 'o estúdio';
+function buildTerm(studio, proc) {
+  const s = studio || 'o estúdio', n = proc ? proc.tatuagens.length : 0;
+  const escopo = proc
+    ? `Este termo vale somente para ${n === 1 ? 'a tatuagem listada' : 'as ' + n + ' tatuagens listadas'} em "Procedimento"${proc.data ? ', na sessão de ' + fmtDate(proc.data) : ''}. O desenho, o tamanho e o local de cada uma são combinados com o(a) tatuador(a) antes do início do procedimento. Outra tatuagem ou outra sessão exige uma nova ficha.`
+    : 'O desenho, o tamanho e o local da tatuagem serão combinados com o(a) tatuador(a) antes do início do procedimento.';
   return {
     version: TERM_VERSION,
+    proc: proc || null,
     questions: QUESTIONS,
     text: [
       `Declaro que fui informado(a) por ${s} de que a tatuagem é um procedimento que perfura a pele com agulhas e deposita pigmento de forma permanente, e de que sua remoção é difícil, cara e pode deixar marcas.`,
       'Fui informado(a) dos possíveis riscos, entre eles: dor, sangramento, inchaço, infecção, reação alérgica a pigmentos ou materiais, cicatrização irregular, formação de queloide e variação de cor ou traço conforme o tipo de pele, a região do corpo e os cuidados posteriores.',
       'Comprometo-me a seguir as orientações de cuidados passadas pelo estúdio e, em caso de sinais de infecção ou reação alérgica, a procurar atendimento médico e avisar o estúdio.',
       'Estou ciente de que omitir ou prestar informações falsas sobre minha saúde pode aumentar os riscos do procedimento e será considerado na apuração de eventual responsabilidade.',
-      'O desenho, o tamanho e o local da tatuagem serão combinados com o(a) tatuador(a) antes do início do procedimento.',
+      escopo,
       'Declaro não estar sob efeito de álcool ou drogas no momento do procedimento e estar em plenas condições de consentir.'
     ],
     decls: [
@@ -320,28 +335,35 @@ function buildDoc(f, term, c, ev) {
     return `<tr><td>${h(q.q)}</td><td>${a.v === 'sim' ? 'Sim' : 'Não'}</td><td>${h(a.d)}</td></tr>`;
   }).join('');
   const signer = c.menor ? c.resp : c;
+  let n = 0;
+  const H = t => `<h2>${++n}. ${h(t)}</h2>`;
+  const p = term.proc;
+  const proc = p ? `${H('Procedimento')}
+<table>${row('Data da sessão', p.data ? fmtDate(p.data) + (p.hora ? ' às ' + p.hora : '') : '—')}${row('Tatuagens', p.tatuagens.length)}</table>
+<ol>${p.tatuagens.map(t => `<li>${h(t.desc)}${[t.estilo, t.cm ? t.cm + ' cm' : ''].filter(Boolean).length ? ' (' + h([t.estilo, t.cm ? t.cm + ' cm' : ''].filter(Boolean).join(', ')) + ')' : ''}</li>`).join('')}</ol>` : '';
   return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><title>Ficha de anamnese - ${h(c.nome)}</title>
 <style>body{font-family:Arial,Helvetica,sans-serif;max-width:780px;margin:24px auto;padding:0 16px;color:#111;line-height:1.45}h1{font-size:20px}h2{font-size:16px;margin-top:26px;border-bottom:1px solid #bbb;padding-bottom:4px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;vertical-align:top;font-size:14px}th{width:34%;background:#f5f5f5}.small{font-size:12px;color:#444}</style></head>
 <body>
 <h1>Ficha de anamnese e termo de consentimento para tatuagem</h1>
 <table>${row('Estúdio', f.studio)}${row('Ficha nº', f.id)}${row('Versão do termo', term.version)}</table>
-<h2>1. Dados do cliente</h2>
+${proc}
+${H('Dados do cliente')}
 <table>${row('Nome completo', c.nome)}${row('CPF', fmtCpf(c.cpf))}${row('Data de nascimento', c.nasc.split('-').reverse().join('/'))}${row('Telefone', c.tel)}${row('E-mail', c.email)}</table>
 ${c.menor ? `<h2>Responsável legal (cliente menor de 18 anos)</h2><table>${row('Nome completo', c.resp.nome)}${row('CPF', fmtCpf(c.resp.cpf))}${row('Parentesco', c.resp.parentesco)}</table>` : ''}
-<h2>2. Anamnese</h2>
+${H('Anamnese')}
 <table><tr><th>Pergunta</th><th style="width:12%">Resposta</th><th>Detalhes</th></tr>${ans}</table>
 <p><b>Outras observações:</b> ${h(c.obs) || '—'}</p>
-<h2>3. Termo de consentimento</h2>
+${H('Termo de consentimento')}
 <ol>${term.text.map(t => `<li>${h(t)}</li>`).join('')}</ol>
-<h2>4. Declarações</h2>
+${H('Declarações')}
 <ul>${term.decls.map(x => `<li>[${c.decls[x.id] ? 'X' : ' '}] ${h(x.t)}</li>`).join('')}</ul>
-<h2>5. Aviso de privacidade</h2>
+${H('Aviso de privacidade')}
 <p>${h(term.privacy)}</p>
-<h2>6. Assinatura eletrônica</h2>
+${H('Assinatura eletrônica')}
 <p>Assinado eletronicamente por <b>${h(signer.nome)}</b> (CPF ${h(fmtCpf(signer.cpf))})${c.menor ? ', responsável legal' : ''}, que digitou o próprio nome completo como assinatura: <b>${h(c.assinatura)}</b>.</p>
 <p>Data e hora: <b>${h(brt(ev.signed_at))}</b> (horário de Brasília) — ${h(ev.signed_at)} (UTC).</p>
-<h2>7. Registro de evidências</h2>
+${H('Registro de evidências')}
 <table>${row('Link criado em', brt(f.created_at) + ' — pela conta ' + maskEmail(f.owner))}${row('Link válido até', brt(f.expires_at))}${row('Link aberto pela primeira vez em', ev.opened ? brt(ev.opened.at) + ' — IP ' + ev.opened.ip : '—')}${row('Assinado em', brt(ev.signed_at))}${row('IP de quem assinou', ev.ip)}${row('País (aproximado)', ev.country)}${row('Navegador / dispositivo', ev.ua)}</table>
 <p class="small">Documento gerado automaticamente pelo sistema HelpInk no momento da assinatura. Assinatura eletrônica nos termos do art. 10, §2º, da MP 2.200-2/2001. O código SHA-256 deste arquivo foi exibido ao signatário no momento da assinatura e registrado pelo sistema; qualquer alteração no arquivo, por menor que seja, muda esse código. O código também foi enviado a um serviço público de carimbo do tempo (OpenTimestamps).</p>
 </body></html>
@@ -376,6 +398,7 @@ async function publicForm(req, env, ctx, url) {
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'JSON inválido' }, 400); }
   const invalid = () => json({ error: 'Link inválido. Peça um novo link ao estúdio.' }, 404);
   if (!body || typeof body.t !== 'string' || !RE_TOKEN.test(body.t)) return invalid();
+  if (url.pathname === '/assinar/api/agenda') return publicAgenda(env, body.t, invalid);
   const f = await env.DB.prepare('SELECT * FROM forms WHERE token_hash = ?').bind(hex(await sha256(body.t))).first();
   if (!f) return invalid();
   const now = nowIso();
@@ -416,11 +439,62 @@ async function publicForm(req, env, ctx, url) {
   return json({ error: 'Não encontrado' }, 404);
 }
 
+const studioOf = async (env, email) => {
+  const meta = await env.DB.prepare(`SELECT data FROM records WHERE user_id = ? AND col = 'meta' AND id = 'profile'`).bind(email).first();
+  return String((meta && JSON.parse(meta.data).studio) || 'Estúdio').slice(0, 80);
+};
+const recordOf = (env, email, col, id) =>
+  env.DB.prepare('SELECT data FROM records WHERE user_id = ? AND col = ? AND id = ?').bind(email, col, id).first();
+
+// Agenda do cliente (pública, só com o link): próximas sessões, sem valores nem dados de saúde.
+async function publicAgenda(env, token, invalid) {
+  const a = await env.DB.prepare('SELECT owner, client_id FROM agenda WHERE token = ?').bind(token).first();
+  if (!a) return invalid();
+  const cli = await recordOf(env, a.owner, 'clients', a.client_id);
+  if (!cli) return invalid(); // cliente apagado: o link deixa de funcionar
+  const { results } = await env.DB.prepare(
+    `SELECT data FROM records WHERE user_id = ? AND col = 'sessions' AND json_extract(data, '$.cid') = ? AND json_extract(data, '$.data') >= ?`
+  ).bind(a.owner, a.client_id, todayBR()).all();
+  const sessions = results.map(r => JSON.parse(r.data))
+    .filter(s => RE_DATE.test(s.data || '') && s.status !== 'Cancelado')
+    .map(s => ({
+      data: s.data, hora: RE_HM.test(s.hora || '') ? s.hora : '', fim: RE_HM.test(s.fim || '') ? s.fim : '',
+      status: SES_ST.includes(s.status) ? s.status : 'Pendente', tatuagens: sessTats(s).map(t => t.desc)
+    }))
+    .sort((x, y) => (x.data + x.hora).localeCompare(y.data + y.hora)).slice(0, 50);
+  const hint = cut(JSON.parse(cli.data).nome, 120).split(' ')[0].slice(0, 40);
+  return json({ studio: await studioOf(env, a.owner), hint, sessions });
+}
+
+// Link da agenda (com login): get devolve o link atual (ou cria), new troca o código, revoke desliga.
+async function ownerAgenda(req, env, email) {
+  if (req.method !== 'POST') return json({ error: 'Método não permitido' }, 405);
+  const { body, tooBig } = await readJson(req);
+  if (tooBig) return json({ error: 'Requisição grande demais' }, 413);
+  const b = body && typeof body === 'object' ? body : {};
+  if (typeof b.client_id !== 'string' || !RE_ID.test(b.client_id)) return json({ error: 'Cliente inválido' }, 400);
+  if (!(await recordOf(env, email, 'clients', b.client_id))) return json({ error: 'Cliente não encontrado. Aguarde salvar e tente de novo.' }, 404);
+  if (b.action === 'revoke') {
+    await env.DB.prepare('DELETE FROM agenda WHERE owner = ? AND client_id = ?').bind(email, b.client_id).run();
+    return json({ ok: true });
+  }
+  if (b.action !== 'get' && b.action !== 'new') return json({ error: 'Ação inválida' }, 400);
+  if (b.action === 'get') {
+    const row = await env.DB.prepare('SELECT token, created_at FROM agenda WHERE owner = ? AND client_id = ?').bind(email, b.client_id).first();
+    if (row) return json(row);
+  }
+  const row = { token: newToken(), created_at: nowIso() };
+  await env.DB.prepare(`INSERT INTO agenda (owner, client_id, token, created_at) VALUES (?, ?, ?, ?)
+    ON CONFLICT (owner, client_id) DO UPDATE SET token = excluded.token, created_at = excluded.created_at`)
+    .bind(email, b.client_id, row.token, row.created_at).run();
+  return json(row);
+}
+
 // Rotas do tatuador (com login): listar, criar link, novo link, cancelar, baixar documento.
 async function ownerForms(req, env, url, email) {
   if (url.pathname === '/api/forms' && req.method === 'GET') {
     const { results } = await env.DB.prepare(
-      `SELECT id, client_id, status, created_at, expires_at, opened_at, signed_at, doc_hash, ots IS NOT NULL AS has_ots
+      `SELECT id, client_id, session_id, status, created_at, expires_at, opened_at, signed_at, doc_hash, ots IS NOT NULL AS has_ots
        FROM forms WHERE owner = ? ORDER BY created_at DESC LIMIT 5000`
     ).bind(email).all();
     return json({ forms: results });
@@ -438,16 +512,21 @@ async function ownerForms(req, env, url, email) {
     const b = body && typeof body === 'object' ? body : {};
     const expires = new Date(Date.now() + FORM_TTL_DAYS * 864e5).toISOString();
     if (b.action === 'create') {
-      if (typeof b.client_id !== 'string' || !RE_ID.test(b.client_id)) return json({ error: 'Cliente inválido' }, 400);
-      const cli = await env.DB.prepare(`SELECT data FROM records WHERE user_id = ? AND col = 'clients' AND id = ?`).bind(email, b.client_id).first();
+      // A ficha é de uma sessão (dia): o termo leva a data e as tatuagens daquela sessão.
+      if (typeof b.session_id !== 'string' || !RE_ID.test(b.session_id)) return json({ error: 'Sessão inválida' }, 400);
+      const ses = await recordOf(env, email, 'sessions', b.session_id);
+      if (!ses) return json({ error: 'Sessão não encontrada. Aguarde salvar e tente de novo.' }, 404);
+      const s = JSON.parse(ses.data), proc = procOf(s);
+      if (!proc.tatuagens.length) return json({ error: 'Descreva as tatuagens da sessão antes de enviar a ficha.' }, 400);
+      if (typeof s.cid !== 'string' || !RE_ID.test(s.cid)) return json({ error: 'A sessão não tem cliente.' }, 400);
+      const cli = await recordOf(env, email, 'clients', s.cid);
       if (!cli) return json({ error: 'Cliente não encontrado. Aguarde salvar e tente de novo.' }, 404);
-      const meta = await env.DB.prepare(`SELECT data FROM records WHERE user_id = ? AND col = 'meta' AND id = 'profile'`).bind(email).first();
-      const studio = String((meta && JSON.parse(meta.data).studio) || 'Estúdio').slice(0, 80);
+      const studio = await studioOf(env, email);
       const hint = String(JSON.parse(cli.data).nome || '').trim().split(/\s+/)[0].slice(0, 40);
       const token = newToken(), id = newId();
       await env.DB.prepare(
-        `INSERT INTO forms (id, token_hash, owner, client_id, studio, client_hint, term, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(id, hex(await sha256(token)), email, b.client_id, studio, hint, JSON.stringify(buildTerm(studio)), nowIso(), expires).run();
+        `INSERT INTO forms (id, token_hash, owner, client_id, session_id, studio, client_hint, term, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(id, hex(await sha256(token)), email, s.cid, b.session_id, studio, hint, JSON.stringify(buildTerm(studio, proc)), nowIso(), expires).run();
       return json({ id, token, expires_at: expires });
     }
     if (b.action === 'relink' || b.action === 'cancel') {
@@ -456,9 +535,18 @@ async function ownerForms(req, env, url, email) {
         const r = await env.DB.prepare(`UPDATE forms SET status = 'cancelled' WHERE id = ? AND owner = ? AND status = 'pending'`).bind(b.id, email).run();
         return r.meta && r.meta.changes ? json({ ok: true }) : json({ error: 'Só é possível cancelar fichas pendentes' }, 409);
       }
+      // Novo link: atualiza também as tatuagens do termo, caso a sessão tenha mudado desde o envio.
+      const f = await env.DB.prepare(`SELECT session_id, studio, term FROM forms WHERE id = ? AND owner = ? AND status = 'pending'`).bind(b.id, email).first();
+      if (!f) return json({ error: 'Só é possível gerar link para fichas pendentes' }, 409);
+      let term = f.term;
+      if (f.session_id) {
+        const ses = await recordOf(env, email, 'sessions', f.session_id);
+        const proc = ses && procOf(JSON.parse(ses.data));
+        if (proc && proc.tatuagens.length) term = JSON.stringify(buildTerm(f.studio, proc));
+      }
       const token = newToken();
-      const r = await env.DB.prepare(`UPDATE forms SET token_hash = ?, expires_at = ?, attempts = 0 WHERE id = ? AND owner = ? AND status = 'pending'`)
-        .bind(hex(await sha256(token)), expires, b.id, email).run();
+      const r = await env.DB.prepare(`UPDATE forms SET token_hash = ?, expires_at = ?, attempts = 0, term = ? WHERE id = ? AND owner = ? AND status = 'pending'`)
+        .bind(hex(await sha256(token)), expires, term, b.id, email).run();
       return r.meta && r.meta.changes ? json({ id: b.id, token, expires_at: expires }) : json({ error: 'Só é possível gerar link para fichas pendentes' }, 409);
     }
     return json({ error: 'Ação inválida' }, 400);

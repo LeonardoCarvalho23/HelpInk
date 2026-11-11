@@ -79,10 +79,13 @@ async function init(){
  if(F.status==='signed')return msg('Ficha já assinada ✅',`Esta ficha foi assinada em ${dt(F.signed_at)}.<br>Código de verificação (SHA-256): <code>${esc(F.doc_hash)}</code><br>Se precisar de uma cópia, peça ao estúdio.`,'okb');
  if(F.status==='expired')return msg('Link expirado','Este link não é mais válido. Peça um novo link ao estúdio.','warn');
  form()}
-function form(){const t=F.term;
+const dBR=d=>String(d||'').split('-').reverse().join('/');
+function form(){const t=F.term,p=t.proc;
  $('#m').innerHTML=head()+`<h1>Ficha de anamnese</h1><p class="sub">${esc(F.studio)}. Link válido até ${dt(F.expires_at)}.</p>
- <div class="card"><div>Olá${F.hint?', '+esc(F.hint):''}! Antes da sua sessão, preencha seus dados e sua ficha de saúde e assine o termo de consentimento. Leva uns 5 minutos.</div>
+ <div class="card"><div>Olá${F.hint?', '+esc(F.hint):''}! Antes da sua sessão${p&&p.data?' de '+esc(dBR(p.data)):''}, preencha seus dados e sua ficha de saúde e assine o termo de consentimento. Leva uns 5 minutos.</div>
  <div class="note">Suas respostas são confidenciais e usadas apenas pelo estúdio para a sua segurança durante o procedimento.</div></div>
+ ${p?`<div class="card"><h2>Procedimento</h2><div class="sub">Esta ficha vale para ${p.tatuagens.length==1?'a tatuagem abaixo':'as '+p.tatuagens.length+' tatuagens abaixo'}${p.data?', na sessão de '+esc(dBR(p.data))+(p.hora?' às '+esc(p.hora):''):''}. Para outra tatuagem ou outra sessão, o estúdio envia uma nova ficha.</div>
+  <ol>${p.tatuagens.map(x=>`<li>${esc(x.desc)}${x.estilo||x.cm?' <span class="sub">('+esc([x.estilo,x.cm?x.cm+' cm':''].filter(Boolean).join(', '))+')</span>':''}</li>`).join('')}</ol></div>`:''}
  <div class="card"><h2>1. Seus dados</h2>
   <label>Nome completo *</label><input id="nome" autocomplete="name" maxlength="120">
   <div class="f2"><div><label>CPF *</label><input id="cpf" inputmode="numeric" maxlength="14" oninput="maskC(this)"></div>

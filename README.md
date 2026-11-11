@@ -39,6 +39,8 @@ src/worker.js              API /api/* + verificação do login do Access + aprov
 migrations/0001_init.sql   tabela de dados (records)
 migrations/0002_users.sql  tabela de contas (users)
 migrations/0003_forms.sql  fichas de anamnese assinadas (forms)
+migrations/0004_sessao_agenda.sql  ficha por sessão e link da agenda do cliente
+public/assinar/agenda/     página pública da agenda do cliente
 public/assinar/index.html  página pública da ficha para o cliente
 wrangler.jsonc             configuração do Worker (banco, Access)
 ```
@@ -51,7 +53,8 @@ Tudo pode ser feito pelo painel da Cloudflare (<https://dash.cloudflare.com>), s
 
 1. **Storage & Databases → D1 SQL Database → Create**, nome `helpink`.
 2. Copie o **Database ID** e cole em `wrangler.jsonc` no campo `database_id`.
-3. Abra o banco → aba **Console**, cole e execute o conteúdo de `migrations/0001_init.sql` e depois os de `migrations/0002_users.sql` e `migrations/0003_forms.sql` (um comando por vez).
+3. Abra o banco → aba **Console**, cole e execute o conteúdo de `migrations/0001_init.sql` e depois os de `migrations/0002_users.sql` , `migrations/0003_forms.sql` e `migrations/0004_sessao_agenda.sql` (um comando por vez).
+   Ao atualizar, rode a migração nova **antes** de publicar o código que depende dela.
 
 ### 2. Publicar o Worker a partir do GitHub
 
@@ -101,9 +104,13 @@ Na aba **Conta** do app, o botão **Sair** encerra a sessão do Access.
 
 ## Ficha de anamnese e assinatura do cliente
 
-1. O tatuador cadastra o cliente e clica em **📝 Ficha → Enviar nova ficha**. O app gera um
-   link pessoal (válido por 7 dias, de uso único) e abre o WhatsApp com a mensagem pronta.
-2. O cliente abre `https://<domínio>/assinar/#<código>`, preenche dados, anamnese, lê o termo,
+1. A ficha é **por sessão (dia)**: cada sessão tem a própria ficha, que vale para todas as
+   tatuagens daquela sessão. Ao salvar uma sessão nova, o app oferece **Enviar ficha**; também
+   dá para enviar pelo botão **Ficha** da sessão. O app gera um link pessoal (válido por 7 dias,
+   de uso único) e abre o WhatsApp com a mensagem pronta. A data e as tatuagens da sessão vão
+   para o termo e para o documento assinado (seção "Procedimento"). Se a sessão mudar antes da
+   assinatura, **Gerar novo link** atualiza as tatuagens da ficha.
+2. O cliente abre `https://<domínio>/assinar/#<código>`, confere as tatuagens, preenche dados, anamnese, lê o termo,
    marca as declarações (riscos, veracidade, consentimento LGPD para dados de saúde e,
    opcionalmente, uso de imagem) e assina digitando o nome completo.
    Menores de 18 anos: o responsável legal preenche os dados dele e assina.
@@ -133,6 +140,17 @@ O arquivo `.ots` pode ser conferido em <https://opentimestamps.org> junto com o 
 **HelpInk - ficha publica (bypass)** (**Bypass → Everyone**). Ela libera só `/assinar/...`;
 `/`, `/api/...` e qualquer outro caminho continuam pedindo login, e a API do app ainda confere
 o token do Access no próprio Worker.
+
+## Agenda do cliente e Google Agenda
+
+- Em **Clientes → Fichas → Link da agenda**, o tatuador envia ao cliente um link pessoal
+  (`https://<domínio>/assinar/agenda/#<código>`) com as próximas sessões: data, horário, status
+  e tatuagens. Valores, observações e dados de saúde não aparecem. O link é sempre o mesmo
+  (pode ser reenviado); **Gerar novo link** troca o código e desliga o anterior. Se o cliente
+  for apagado, o link para de funcionar.
+- Cada sessão tem o botão **Agenda**, que abre o Google Agenda com o evento pronto
+  (cliente, horário, tatuagens e telefone) para o tatuador salvar. O mesmo aparece ao salvar
+  uma sessão nova. Na página da agenda, o cliente também pode adicionar cada sessão à agenda dele.
 
 O texto do termo fica em `src/worker.js` (`buildTerm`). Peça a um advogado para revisá-lo;
 ao mudar o texto, altere também `TERM_VERSION`. Cada ficha guarda a versão do termo que foi assinada.

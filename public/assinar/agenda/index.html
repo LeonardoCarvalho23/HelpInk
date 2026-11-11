@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Minhas sessões · HelpInk</title>
+<link rel="preload" href="/assinar/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(/assinar/fonts/instrument-sans-latin.woff2) format("woff2")}@font-face{font-family:"Grenze Gotisch";font-style:normal;font-weight:600;font-display:swap;src:url(/assinar/fonts/grenze-gotisch-600-latin.woff2) format("woff2")}</style>
+<style>
+:root{color-scheme:light;
+ --paper:#F4F4F7;--surface:#FFFFFF;--raised:#F8F7FB;--line:#E4E2EA;--line-2:#D2CFDB;
+ --ink:#1D1A24;--ink-2:#46414F;--mute:#6B6578;
+ --stencil:#5536C8;--stencil-ink:#FFFFFF;--stencil-soft:#EEEAFB;
+ --ok:#1E7A55;--ok-soft:#E2F2EA;--warn:#9E5604;--warn-soft:#FBEED8;--bad:#BE3048;--bad-soft:#FBE6E9;
+ --f:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-mark:"Grenze Gotisch",Georgia,serif}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;
+ --paper:#121017;--surface:#1A1720;--raised:#221E2A;--line:#2C2735;--line-2:#3B3546;
+ --ink:#EEEAF6;--ink-2:#CBC5D8;--mute:#9A92AB;
+ --stencil:#A893FF;--stencil-ink:#170F35;--stencil-soft:#2A2340;
+ --ok:#5FCB9A;--ok-soft:#163026;--warn:#F0B25A;--warn-soft:#35260F;--bad:#FF7D90;--bad-soft:#3A1820}}
+*{box-sizing:border-box}
+body{margin:0;font:400 16px/1.55 var(--f);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+main{max-width:620px;margin:0 auto;padding:22px 16px calc(48px + env(safe-area-inset-bottom,0px))}
+.logo{font-family:var(--f-mark);font-weight:600;font-size:30px;line-height:1;margin-bottom:22px}
+h1{font-size:27px;line-height:1.15;font-weight:650;letter-spacing:-.018em;margin:0 0 4px}
+.sub{color:var(--mute);font-size:14.5px}
+:focus-visible{outline:2px solid var(--stencil);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:14px}
+.ses{display:grid;grid-template-columns:64px 1fr;gap:4px 16px}
+.dia{grid-row:span 3;text-align:center;border-right:1px solid var(--line);padding-right:14px}
+.dia b{display:block;font-size:30px;line-height:1;font-weight:650}
+.dia span{display:block;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-top:4px}
+.qd{font-weight:600;font-size:16.5px}
+.tat{margin:2px 0 0;padding-left:18px;color:var(--ink-2)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px}
+.bd{display:inline-flex;align-items:center;font-size:12.5px;font-weight:500;line-height:1;white-space:nowrap;padding:5px 9px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
+.bd.p{background:var(--warn-soft);color:var(--warn)}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:500 14.5px var(--f);cursor:pointer;text-decoration:none}
+.btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.note{font-size:14px;line-height:1.5;background:var(--raised);border:1px solid var(--line);padding:12px 14px;border-radius:10px;color:var(--ink-2);margin-top:14px}
+.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}.err{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+@media(max-width:420px){.ses{grid-template-columns:52px 1fr;gap:4px 12px}.dia b{font-size:26px}}
+</style></head><body>
+<main id="m"><div class="logo">HelpInk</div><p class="sub">Carregando suas sessões…</p></main>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const T=location.hash.slice(1),head=`<div class="logo">HelpInk</div>`;
+let A=null;
+function msg(t,b,cls){$('#m').innerHTML=head+`<div class="card"><h1>${t}</h1><div class="note ${cls||''}">${b}</div></div>`}
+async function init(){
+ if(!/^[A-Za-z0-9_-]{43}$/.test(T))return msg('Link incompleto','Abra o link completo que o estúdio enviou para você (incluindo a parte depois do #).','warn');
+ let r;try{r=await fetch('/assinar/api/agenda',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t:T}),cache:'no-store'})}
+ catch(e){return msg('Sem conexão','Verifique sua internet e tente de novo.','warn')}
+ const j=await r.json().catch(()=>null);
+ if(!r.ok||!j)return msg('Link inválido',esc((j&&j.error)||'Peça um novo link ao estúdio.'),'err');
+ A=j;view()}
+const dOf=s=>{const[y,m,d]=s.data.split('-').map(Number);return new Date(y,m-1,d)};
+function view(){const L=A.sessions||[];
+ $('#m').innerHTML=head+`<h1>Suas próximas sessões</h1><p class="sub">${A.hint?'Olá, '+esc(A.hint)+'! ':''}Sessões marcadas no ${esc(A.studio)}.</p>`+
+ (L.length?L.map((s,i)=>{const d=dOf(s),wd=d.toLocaleDateString('pt-BR',{weekday:'long'}),mes=d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+  return`<div class="card ses"><div class="dia"><b>${d.getDate()}</b><span>${esc(mes)}</span></div>
+  <div class="qd">${esc(wd.charAt(0).toUpperCase()+wd.slice(1))}${s.hora?', '+esc(s.hora)+(s.fim?' às '+esc(s.fim):''):''}</div>
+  <ul class="tat">${s.tatuagens.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+  <div class="row"><span class="bd ${s.status==='Pendente'?'p':''}">${s.status==='Pendente'?'A confirmar':esc(s.status)}</span>
+  <button class="btn" onclick="gcal(${i})"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Adicionar ao Google Agenda</button></div></div>`}).join('')
+ :`<div class="card"><div class="note">Nenhuma sessão marcada no momento. Quando o estúdio marcar a próxima, ela aparece aqui neste mesmo link.</div></div>`)+
+ `<p class="sub" style="margin-top:18px">Para remarcar ou tirar dúvidas, fale direto com o estúdio.</p>`}
+const p2=n=>String(n).padStart(2,'0');
+const st=d=>d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'T'+p2(d.getHours())+p2(d.getMinutes())+'00';
+function gcal(i){const s=A.sessions[i];if(!s)return;const d=dOf(s);let dates;
+ if(s.hora){const[h,m]=s.hora.split(':').map(Number),a=new Date(d.getFullYear(),d.getMonth(),d.getDate(),h,m);let b;
+  if(s.fim){const[h2,m2]=s.fim.split(':').map(Number);b=new Date(d.getFullYear(),d.getMonth(),d.getDate(),h2,m2);if(b<=a)b.setDate(b.getDate()+1)}else b=new Date(a.getTime()+2*36e5);
+  dates=st(a)+'/'+st(b)}
+ else{const b=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);dates=s.data.replace(/-/g,'')+'/'+b.getFullYear()+p2(b.getMonth()+1)+p2(b.getDate())}
+ const det=(s.tatuagens.length==1?'Tatuagem: '+s.tatuagens[0]:'Tatuagens:\n'+s.tatuagens.map(t=>'- '+t).join('\n'));
+ window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Tatuagem - '+A.studio)+'&dates='+dates+'&details='+encodeURIComponent(det),'_blank','noopener')}
+init();
+</script></body></html>
