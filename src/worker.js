@@ -192,6 +192,12 @@ const brt = iso => new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sa
 const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const normName = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 const RE_TOKEN = /^[A-Za-z0-9_-]{43}$/;
+// E-mail parcial para o documento entregue ao cliente (o completo fica só no banco): jo***@gm***.com
+const maskEmail = e => {
+  const [u, d = ''] = String(e || '').split('@'), dot = d.lastIndexOf('.');
+  const m = s => s.slice(0, 2) + '***';
+  return u ? m(u) + '@' + (dot > 0 ? m(d.slice(0, dot)) + d.slice(dot) : m(d)) : '';
+};
 
 function cpfOk(c) {
   c = String(c || '').replace(/\D/g, '');
@@ -327,7 +333,7 @@ ${c.menor ? `<h2>Responsável legal (cliente menor de 18 anos)</h2><table>${row(
 <p>Assinado eletronicamente por <b>${h(signer.nome)}</b> (CPF ${h(fmtCpf(signer.cpf))})${c.menor ? ', responsável legal' : ''}, que digitou o próprio nome completo como assinatura: <b>${h(c.assinatura)}</b>.</p>
 <p>Data e hora: <b>${h(brt(ev.signed_at))}</b> (horário de Brasília) — ${h(ev.signed_at)} (UTC).</p>
 <h2>7. Registro de evidências</h2>
-<table>${row('Link criado em', brt(f.created_at) + ' — pela conta ' + f.owner)}${row('Link válido até', brt(f.expires_at))}${row('Link aberto pela primeira vez em', ev.opened ? brt(ev.opened.at) + ' — IP ' + ev.opened.ip : '—')}${row('Assinado em', brt(ev.signed_at))}${row('IP de quem assinou', ev.ip)}${row('País (aproximado)', ev.country)}${row('Navegador / dispositivo', ev.ua)}</table>
+<table>${row('Link criado em', brt(f.created_at) + ' — pela conta ' + maskEmail(f.owner))}${row('Link válido até', brt(f.expires_at))}${row('Link aberto pela primeira vez em', ev.opened ? brt(ev.opened.at) + ' — IP ' + ev.opened.ip : '—')}${row('Assinado em', brt(ev.signed_at))}${row('IP de quem assinou', ev.ip)}${row('País (aproximado)', ev.country)}${row('Navegador / dispositivo', ev.ua)}</table>
 <p class="small">Documento gerado automaticamente pelo sistema HelpInk no momento da assinatura. Assinatura eletrônica nos termos do art. 10, §2º, da MP 2.200-2/2001. O código SHA-256 deste arquivo foi exibido ao signatário no momento da assinatura e registrado pelo sistema; qualquer alteração no arquivo, por menor que seja, muda esse código. O código também foi enviado a um serviço público de carimbo do tempo (OpenTimestamps).</p>
 </body></html>
 `;

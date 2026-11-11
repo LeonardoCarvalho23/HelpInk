@@ -2,8 +2,8 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HelpInk</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/assinar/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(/assinar/fonts/instrument-sans-latin.woff2) format("woff2")}@font-face{font-family:"Grenze Gotisch";font-style:normal;font-weight:600;font-display:swap;src:url(/assinar/fonts/grenze-gotisch-600-latin.woff2) format("woff2")}</style>
 <meta name="theme-color" content="#F4F4F7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#121017" media="(prefers-color-scheme: dark)">
 <style>
 /* ===== HelpInk · direção "Estêncil" =====
@@ -524,7 +524,7 @@ function linkM(cid,r){const c=db.clients.find(x=>x.id===cid)||{},link=location.o
  dlg('Link da ficha pronto',`<p class="sub">Envie para ${esc(c.nome||'o cliente')}. O link é pessoal e vale até ${dth(r.expires_at)}. Ele só aparece agora: se perder, gere um novo.</p>
  <label for="lk">Link</label><input id="lk" readonly onfocus="this.select()" value="${esc(link)}">
  ${tel?'':'<div class="note">Cadastre o telefone do cliente para enviar direto pelo WhatsApp.</div>'}`,
- `<button class="btn s" onclick="fichaM('${cid}')">Concluir</button><span class="sp"></span><button class="btn s" onclick="cpLink()">${ic('copy')}Copiar mensagem</button>${tel?`<button class="btn" onclick="window.open('https://wa.me/${tel}?text='+encodeURIComponent(_lk.msgW),'_blank')">${ic('send')}Enviar pelo WhatsApp</button>`:''}`,()=>fichaM(cid))}
+ `<button class="btn s" onclick="fichaM('${cid}')">Concluir</button><span class="sp"></span><button class="btn s" onclick="cpLink()">${ic('copy')}Copiar mensagem</button>${tel?`<button class="btn" onclick="window.open('https://wa.me/${tel}?text='+encodeURIComponent(_lk.msgW),'_blank','noopener')">${ic('send')}Enviar pelo WhatsApp</button>`:''}`,()=>fichaM(cid))}
 function cpLink(){const t=_lk.msgW;const fb=()=>{$('#lk').select();document.execCommand('copy');toast('Link copiado')};
  try{navigator.clipboard.writeText(t).then(()=>toast('Mensagem com o link copiada'),fb)}catch(e){fb()}}
 async function hashHex(s){const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));return[...d].map(x=>x.toString(16).padStart(2,'0')).join('')}

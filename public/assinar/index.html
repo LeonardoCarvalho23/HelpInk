@@ -3,8 +3,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Ficha de anamnese · HelpInk</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/assinar/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(/assinar/fonts/instrument-sans-latin.woff2) format("woff2")}@font-face{font-family:"Grenze Gotisch";font-style:normal;font-weight:600;font-display:swap;src:url(/assinar/fonts/grenze-gotisch-600-latin.woff2) format("woff2")}</style>
 <style>
 :root{color-scheme:light;
  --paper:#F4F4F7;--surface:#FFFFFF;--raised:#F8F7FB;--line:#E4E2EA;--line-2:#D2CFDB;
@@ -151,6 +151,6 @@ async function done(r){DOC=r;
  <div class="note">Este código é a "impressão digital" do arquivo: se qualquer letra do documento for alterada, o código muda. Anote ou tire um print desta tela. Por segurança, depois de fechar esta página a ficha não poderá mais ser vista por este link.</div></div>`}
 const blob=()=>new Blob([DOC.doc],{type:'text/html;charset=utf-8'});
 function dl(){const a=document.createElement('a');a.href=URL.createObjectURL(blob());a.download='ficha-anamnese-'+DOC.signed_at.slice(0,10)+'.html';document.body.appendChild(a);a.click();a.remove()}
-function openDoc(){window.open(URL.createObjectURL(blob()),'_blank')}
+function openDoc(){window.open(URL.createObjectURL(blob()),'_blank','noopener')}
 init();
 </script></body></html>
