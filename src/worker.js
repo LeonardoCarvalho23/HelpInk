@@ -8,12 +8,31 @@ const COLS = new Set(['meta', 'clients', 'sessions', 'personal', 'stock', 'buys'
 const MAX_UPS = 200, MAX_DELS = 200;      // por requisição (o app divide em lotes)
 const ROWS_PER_INSERT = 25;               // 4 parâmetros por linha → 100 (limite do D1)
 const IDS_PER_DELETE = 98;                // + user_id e col = 100 parâmetros
+const RE_ID = /^[A-Za-z0-9_-]{1,64}$/;    // IDs vão para atributos HTML no app: só caracteres seguros
+const MAX_BODY = 4 * 1024 * 1024;         // 4 MB por requisição
+const MAX_RECORD = 64 * 1024;             // 64 KB por registro (um cliente, uma sessão…)
+const MAX_RECORDS_PER_USER = 50000;       // teto de linhas por usuário
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'DENY',
+      'referrer-policy': 'no-referrer'
+    }
   });
+
+// Lê o corpo JSON respeitando o limite de tamanho
+async function readJson(req) {
+  const len = +req.headers.get('content-length') || 0;
+  if (len > MAX_BODY) return { tooBig: true };
+  const text = await req.text();
+  if (text.length > MAX_BODY) return { tooBig: true };
+  try { return { body: JSON.parse(text) }; } catch { return { body: null }; }
+}
 
 export default {
   async fetch(req, env) {
@@ -42,7 +61,9 @@ export default {
 
       if (url.pathname === '/api/signup' && req.method === 'POST') {
         if (acc.status !== 'none') return json({ error: 'Cadastro já enviado' }, 409);
-        const b = await req.json().catch(() => null) || {};
+        const { body: b0, tooBig } = await readJson(req);
+        if (tooBig) return json({ error: 'Requisição grande demais' }, 413);
+        const b = b0 && typeof b0 === 'object' ? b0 : {};
         const clean = (v, n) => String(v || '').trim().slice(0, n);
         const nome = clean(b.nome, 80), estudio = clean(b.estudio, 80), telefone = clean(b.telefone, 30);
         if (!nome) return json({ error: 'Informe seu nome' }, 400);
@@ -64,7 +85,9 @@ export default {
           return json({ users: results.map(u => ({ ...u, admin: isAdmin(env, u.email) })) });
         }
         if (url.pathname === '/api/admin/users' && req.method === 'POST') {
-          const b = await req.json().catch(() => null) || {};
+          const { body: b0, tooBig } = await readJson(req);
+          if (tooBig) return json({ error: 'Requisição grande demais' }, 413);
+          const b = b0 && typeof b0 === 'object' ? b0 : {};
           const target = String(b.email || '').toLowerCase();
           if (!target || isAdmin(env, target)) return json({ error: 'Usuário inválido' }, 400);
           if (b.action === 'approve' || b.action === 'reject') {
@@ -92,16 +115,24 @@ export default {
       }
 
       if (url.pathname === '/api/sync' && req.method === 'POST') {
-        const body = await req.json().catch(() => null);
-        if (!body) return json({ error: 'JSON inválido' }, 400);
+        const { body, tooBig } = await readJson(req);
+        if (tooBig) return json({ error: 'Requisição grande demais' }, 413);
+        if (!body || typeof body !== 'object') return json({ error: 'JSON inválido' }, 400);
         const ups = Array.isArray(body.ups) ? body.ups : [], dels = Array.isArray(body.dels) ? body.dels : [];
         if (ups.length > MAX_UPS || dels.length > MAX_DELS) return json({ error: 'Lote grande demais' }, 413);
 
-        const okKey = r => r && COLS.has(r.col) && typeof r.id === 'string' && r.id.length > 0 && r.id.length <= 64;
+        const okKey = r => r && typeof r === 'object' && COLS.has(r.col) && typeof r.id === 'string' && RE_ID.test(r.id);
         const rows = [];
         for (const r of ups) {
-          if (!okKey(r) || !r.data || typeof r.data !== 'object') return json({ error: 'Registro inválido' }, 400);
-          rows.push([email, r.col, r.id, JSON.stringify(r.data)]);
+          if (!okKey(r) || !r.data || typeof r.data !== 'object' || Array.isArray(r.data))
+            return json({ error: 'Registro inválido' }, 400);
+          const data = JSON.stringify(r.data);
+          if (data.length > MAX_RECORD) return json({ error: 'Registro grande demais' }, 413);
+          rows.push([email, r.col, r.id, data]);
+        }
+        if (rows.length) {
+          const c = await env.DB.prepare('SELECT COUNT(*) AS n FROM records WHERE user_id = ?').bind(email).first();
+          if (c && c.n + rows.length > MAX_RECORDS_PER_USER) return json({ error: 'Limite de registros da conta atingido' }, 413);
         }
         const delBy = {};
         for (const r of dels) {

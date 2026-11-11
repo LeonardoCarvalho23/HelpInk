@@ -58,7 +58,7 @@ const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const R=n=>'R$ '+(+n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>new Date().toISOString().slice(0,10);
-const fd=d=>d?d.split('-').reverse().join('/'):'';
+const fd=d=>d?esc(String(d).split('-').reverse().join('/')):'';
 let badD=0;
 function toISO(s){s=s.trim();if(!s)return'';const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s);if(m){const d=new Date(m[3],m[2]-1,m[1]);if(d.getFullYear()==m[3]&&d.getMonth()==m[2]-1&&d.getDate()==m[1])return m[3]+'-'+m[2]+'-'+m[1]}badD=1;return''}
 function mask(e){let v=e.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);else if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);e.value=v}
@@ -95,8 +95,25 @@ function showSync(){const e=$('#sync');if(!e)return;
  else{e.className='hide';e.onclick=null}}
 addEventListener('beforeunload',e=>{if(pend||syncErr){e.preventDefault();e.returnValue=''}});
 async function loadDB(){const r=await api('/api/data'),rows=r.rows;
- db=blank();for(const r of rows){if(r.col==='meta')Object.assign(db,{studio:r.data.studio||'Meu Estúdio',named:!!r.data.named});else if(db[r.col])db[r.col].push(r.data)}
+ const d=blank();for(const r of rows){if(r.col==='meta')Object.assign(d,{studio:r.data.studio||'Meu Estúdio',named:!!r.data.named});else if(d[r.col])d[r.col].push(r.data)}
+ db=sanitize(d);delete db.dropped;
  snap=snapshot();syncErr=null;return rows.length}
+/* ---- Validação: todo dado que entra (banco, backup importado, versão antiga) passa por aqui.
+   IDs só com letras/números/_/- (vão para atributos onclick); datas, horas e números no formato esperado;
+   apenas valores simples (texto, número, sim/não). O resto é descartado. ---- */
+const RID=/^[A-Za-z0-9_-]{1,64}$/,RDT=/^\d{4}-\d{2}-\d{2}$/,RTM=/^\d{2}:\d{2}$/;
+const SAN={clients:{d:['nasc','aceiteData']},sessions:{d:['data'],t:['hora','fim'],n:['cm','cart','valor','material'],r:['cid']},personal:{d:['data'],n:['valor']},stock:{d:['compra','fim'],n:['qtd','custo','min']},buys:{d:['data'],n:['qtd','custo'],r:['sid']}};
+function sanitize(d){const o=blank();let drop=0;if(!d||typeof d!=='object')return o;
+ if(typeof d.studio==='string'&&d.studio.trim())o.studio=d.studio.slice(0,80);o.named=!!d.named;
+ for(const c of COLS){const S=SAN[c];for(const r of Array.isArray(d[c])?d[c]:[]){
+  if(!r||typeof r!=='object'||Array.isArray(r)||!RID.test(r.id)){drop++;continue}
+  const x={};for(const k of Object.keys(r)){if(k==='__proto__'||k==='constructor'||k==='prototype')continue;const v=r[k];x[k]=typeof v==='string'?v.slice(0,5000):typeof v==='number'&&isFinite(v)||typeof v==='boolean'?v:''}
+  for(const k of S.d||[])if(x[k]&&!RDT.test(x[k]))x[k]='';
+  for(const k of S.t||[])if(x[k]&&!RTM.test(x[k]))x[k]='';
+  for(const k of S.n||[])if(x[k]!==''&&x[k]!=null){const n=+x[k];x[k]=isFinite(n)?n:0}
+  for(const k of S.r||[])if(x[k]&&!RID.test(x[k]))x[k]='';
+  o[c].push(x)}}
+ o.dropped=drop;return o}
 /* ---- Dados antigos (versão que salvava em cookies/localStorage neste navegador) ---- */
 const CK='bink';
 function legacy(){let s=null;
@@ -173,7 +190,7 @@ async function usrAct(i,action){const u=usrs[i];if(!u)return;
 const monthIn=()=>{const[y,m]=per.split('-'),Y=new Date().getFullYear();let ys='';for(let i=Y-5;i<=Y+1;i++)ys+=`<option ${i==y?'selected':''}>${i}</option>`;
  return`<div class="bar" style="margin:0;gap:6px"><select style="width:auto" onchange="per=$('#pY').value+'-'+this.value;render()">${MES.map((n,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${v===m?'selected':''}>${n}</option>`}).join('')}</select><select id="pY" style="width:auto" onchange="per=this.value+'-${m}';render()">${ys}</select></div>`};
 const statBox=(i,top,n,l,cls)=>`<div class="card st"><div class="top"><div class="ic">${i}</div><em>${top}</em></div><div class="n ${cls||''}">${n}</div><div class="l">${l}</div></div>`;
-function sessRow(s,full){return`<div class="row" onclick="edS('${s.id}')" style="cursor:pointer"><div class="t">${s.hora||'—'}<small>${full?fd(s.data):(s.fim||'')}</small></div><div class="m">${esc(s.desc)}<small>${esc(cname(s.cid))}${s.estilo?' · '+esc(s.estilo):''}${s.cm?' · '+s.cm+' cm':''}${s.cart?' · '+s.cart+(s.cart==1?' cartucho':' cartuchos'):''}</small></div>${full?`<div class="v"><b>${R(s.valor)}</b>material ${R(s.material)} · lucro ${R((s.valor||0)-(s.material||0))}${s.pago?' · pago':''}${dur(s)?' · ⏱ '+dur(s):''}</div>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span></div>`}
+function sessRow(s,full){return`<div class="row" onclick="edS('${s.id}')" style="cursor:pointer"><div class="t">${esc(s.hora)||'—'}<small>${full?fd(s.data):esc(s.fim)}</small></div><div class="m">${esc(s.desc)}<small>${esc(cname(s.cid))}${s.estilo?' · '+esc(s.estilo):''}${s.cm?' · '+esc(s.cm)+' cm':''}${s.cart?' · '+esc(s.cart)+(s.cart==1?' cartucho':' cartuchos'):''}</small></div>${full?`<div class="v"><b>${R(s.valor)}</b>material ${R(s.material)} · lucro ${R((s.valor||0)-(s.material||0))}${s.pago?' · pago':''}${dur(s)?' · ⏱ '+dur(s):''}</div>`:''}<span class="bd ${stCls(s.status)}">${esc(s.status||'Pendente')}</span></div>`}
 const dur=s=>{if(!s.hora||!s.fim)return'';const a=s.hora.split(':'),b=s.fim.split(':');let m=(b[0]*60+ +b[1])-(a[0]*60+ +a[1]);if(m<0)m+=1440;return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
 const sortS=l=>l.slice().sort((a,b)=>(a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
 function vDash(){const h=new Date().getHours(),g=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
@@ -202,7 +219,7 @@ function vEst(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLow
  return`<header><div><h1>Estoque</h1><div class="sub">Materiais, custos e compras</div></div>${monthIn()}</header>
  <div class="grid">${statBox('📦','',db.stock.length,'Itens cadastrados')}${statBox('💰','',R(tv),'Valor em estoque')}${statBox('🛒','no período',R(bp),'Compras')}</div>
  <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
- ${l.map(s=>{const lo=s.min>0&&s.qtd<=s.min;return`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${esc(s.cat)} · ${R(s.custo)} / ${esc(s.un)}</small></div><span class="bd ${lo?'x':''}">${s.qtd} ${esc(s.un)}</span><div class="acts"><button class="btn s" onclick="buy('${s.id}')">+ Compra</button><button class="btn s" onclick="use('${s.id}')">− Baixa</button></div></div>`}).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
+ ${l.map(s=>{const lo=s.min>0&&s.qtd<=s.min;return`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${esc(s.cat)} · ${R(s.custo)} / ${esc(s.un)}</small></div><span class="bd ${lo?'x':''}">${esc(s.qtd)} ${esc(s.un)}</span><div class="acts"><button class="btn s" onclick="buy('${s.id}')">+ Compra</button><button class="btn s" onclick="use('${s.id}')">− Baixa</button></div></div>`}).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
 function toMD(){const T=(h,rows)=>rows.length?`| ${h.join(' | ')} |\n|${h.map(()=>'---').join('|')}|\n${rows.map(r=>'| '+r.map(x=>String(x==null?'':x).replace(/\|/g,'/')).join(' | ')+' |').join('\n')}\n`:'_Sem registros._\n';
  return`# HelpInk — Backup de ${db.studio}\nGerado em ${new Date().toLocaleString('pt-BR')}\n\n## Clientes\n${T(['Nome','Telefone','E-mail','Termo aceito'],db.clients.map(c=>[c.nome,c.tel,c.email,c.aceite?'Sim '+fd(c.aceiteData):'Não']))}\n## Tatuagens\n${T(['Data','Cliente','Serviço','Estilo','Tamanho (cm)','Cartuchos','Duração','Valor','Material','Status','Pago'],db.sessions.map(s=>[fd(s.data),cname(s.cid),s.desc,s.estilo,s.cm,s.cart,dur(s),s.valor,s.material,s.status,s.pago?'Sim':'Não']))}\n## Custos pessoais\n${T(['Data','Descrição','Categoria','Valor'],db.personal.map(p=>[fd(p.data),p.desc,p.cat,p.valor]))}\n## Estoque\n${T(['Material','Qtd','Comprado em','Acabou em'],db.stock.map(s=>[s.nome,s.qtd,fd(s.compra),s.fim?fd(s.fim):'Em uso']))}\n## Dados para importação (não edite)\n\`\`\`json\n${JSON.stringify(db)}\n\`\`\`\n`}
 function vBkp(){return`<header><div><h1>Conta e backup</h1><div class="sub">Seus dados ficam salvos na nuvem, na sua conta</div></div></header>
@@ -216,14 +233,17 @@ function dl(){try{const a=document.createElement('a');a.href=URL.createObjectURL
 function cp(){const t=$('#out');t.select();try{navigator.clipboard.writeText(t.value).then(()=>alert('Copiado!'),()=>document.execCommand('copy'))}catch(e){document.execCommand('copy')}}
 function rd(f){if(!f)return;const r=new FileReader();r.onload=()=>imp(r.result);r.readAsText(f)}
 function imp(t){const m=/```json\s*([\s\S]*?)```/.exec(t||'');if(!m){alert('Arquivo inválido: bloco de dados não encontrado.');return}
- try{const d=JSON.parse(m[1]);if(!confirm('Substituir todos os dados atuais pelos do arquivo?'))return;db=Object.assign({studio:'Meu Estúdio',clients:[],sessions:[],personal:[],stock:[],buys:[]},d);save();alert('Dados importados!');go('dash')}catch(e){alert('Não foi possível ler os dados.')}}
+ let d;try{d=sanitize(JSON.parse(m[1]))}catch(e){alert('Não foi possível ler os dados.');return}
+ const n=COLS.reduce((a,c)=>a+d[c].length,0);
+ if(!confirm(`Substituir TODOS os dados atuais da sua conta pelos do arquivo (${n} registros)? Os dados atuais serão apagados.`))return;
+ const drop=d.dropped;delete d.dropped;db=d;save();alert('Dados importados!'+(drop?` ${drop} registro(s) inválido(s) foram ignorados.`:''));go('dash')}
 const acabou=id=>{db.stock.find(x=>x.id===id).fim=today();save();render()};
 const dias=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/864e5));
 function vEst2(){const l=db.stock.filter(s=>s.nome.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.compra||'').localeCompare(a.compra||'')),em=db.stock.filter(s=>!s.fim).length;
  return`<header><div><h1>Estoque</h1><div class="sub">Quando você comprou e quando acabou cada material</div></div></header>
  <div class="grid">${statBox('📦','',db.stock.length,'Materiais cadastrados')}${statBox('⏳','',em,'Em uso')}${statBox('✅','',db.stock.length-em,'Já acabaram')}</div>
  <div class="bar"><input placeholder="Buscar material…" value="${esc(q)}" oninput="q=this.value;render();const e=$('.bar input');e.focus();e.setSelectionRange(99,99)"><button class="btn" onclick="addK()">+ Novo material</button></div>
- ${l.map(s=>`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${s.qtd?'Qtd '+s.qtd+' · ':''}Comprado em ${fd(s.compra)||'—'}${s.fim?' · acabou em '+fd(s.fim):''}</small></div><span class="bd ${s.fim?'c':''}">${s.fim?(s.compra?'Durou '+dias(s.compra,s.fim)+' dias':'Acabou'):'Em uso'}</span>${s.fim?'':`<button class="btn s" onclick="acabou('${s.id}')">Acabou hoje</button>`}</div>`).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
+ ${l.map(s=>`<div class="row"><div class="m" style="cursor:pointer" onclick="edK('${s.id}')">${esc(s.nome)}<small>${s.qtd?'Qtd '+esc(s.qtd)+' · ':''}Comprado em ${fd(s.compra)||'—'}${s.fim?' · acabou em '+fd(s.fim):''}</small></div><span class="bd ${s.fim?'c':''}">${s.fim?(s.compra?'Durou '+dias(s.compra,s.fim)+' dias':'Acabou'):'Em uso'}</span>${s.fim?'':`<button class="btn s" onclick="acabou('${s.id}')">Acabou hoje</button>`}</div>`).join('')||'<div class="empty">Nenhum material cadastrado.</div>'}`}
 const V={dash:vDash,cli:vCli,ses:vSes,pes:vPes,est:vEst2,bkp:vBkp,usr:vUsr};
 function render(){$('#nav').innerHTML=navH();$('#main').innerHTML=V[tab]()}
 function askName(){$('#mod').innerHTML=`<div class="modal"><div><h2>Bem-vindo ao HelpInk! 👋</h2><div class="sub">Como devemos chamar você ou o seu estúdio?</div><label>Seu nome ou nome do estúdio</label><input id="nm" maxlength="40" placeholder="Ex.: Estúdio do Amin"><div class="bar" style="margin:18px 0 0"><button class="btn" id="nmok">Começar</button></div></div></div>`;
@@ -252,7 +272,7 @@ async function start(){snap=null;screen('<div class="sub">Carregando…</div>');
  if(me.status==='pending')return screen(`<h2>Cadastro enviado ✅</h2><div class="sub">Olá, ${esc(me.user.nome)}! Recebemos seu pedido de acesso.</div><div class="note">Você poderá usar o HelpInk assim que o administrador aprovar o cadastro. Volte mais tarde ou toque em "Verificar de novo".</div>${btns('<button class="btn" onclick="start()">Verificar de novo</button>')}`);
  if(me.status!=='approved')return screen(`<h2>Acesso não liberado</h2><div class="sub">Seu pedido de acesso não foi aprovado. Em caso de dúvida, fale com o administrador do HelpInk.</div>${btns('')}`);
  try{const n=await loadDB();
-  if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=Object.assign(blank(),L);await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pela opção "toque para tentar de novo".');else clearLegacy()}}
+  if(!n){const L=legacy();if(L&&confirm('Encontramos dados do HelpInk salvos neste navegador (versão antiga). Deseja enviá-los para a sua conta?')){db=sanitize(L);delete db.dropped;await save();if(syncErr)alert('Não foi possível enviar todos os dados. Eles continuam salvos neste navegador; tente de novo pela opção "toque para tentar de novo".');else clearLegacy()}}
  }catch(e){return failV(e)}
  if(!db.named&&me.user&&me.user.estudio){db.studio=me.user.estudio;db.named=1;save()}
  $('#auth').style.display='none';$('#app').style.display='';tab='dash';render();showSync();
